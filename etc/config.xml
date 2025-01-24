@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ *  Copyright © Above The Fray Design, Inc. All rights reserved.
+ *  See ATF_COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <tax>
+            <zamp_configuration>
+                <earliest_date>2022-01-01 00:00:00</earliest_date>
+                <api_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted"></api_secret>
+                <default_product_tax_provider_tax_code>R_TPP</default_product_tax_provider_tax_code>
+                <log_lifetime>30</log_lifetime>
+            </zamp_configuration>
+        </tax>
+    </default>
+</config>

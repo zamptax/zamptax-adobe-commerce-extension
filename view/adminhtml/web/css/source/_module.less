@@ -1,0 +1,57 @@
+// /**
+//  * Copyright © Above The Fray Design, Inc. All rights reserved.
+//  * See ATF_COPYING.txt for license details.
+//  */
+.zamp-historicaltransaction-index {
+    .admin__data-grid-action-bookmarks {
+        display: none;
+    }
+}
+
+.zamp-historicaltransaction-queue {
+    .queue-message.message {
+        margin-bottom: 5px;
+    }
+
+    .queue-loader.message {
+        display: flex;
+        gap: 10px;
+
+        .ldBar-label {
+            position: absolute;
+            left: 105%;
+            top: 0;
+        }
+    }
+}
+
+.zamp-transactionlog-index {
+    .break-text .data-grid-cell-content {
+        overflow-wrap: break-word;
+        inline-size: 350px;
+    }
+}
+
+.zamp-transactionlog-view {
+    .transaction-log {
+        table-layout: fixed;
+        width: 100%;
+        max-width: 800px;
+        margin: auto;
+        border-spacing: 10px;
+        border-collapse: separate;
+
+        td {
+            vertical-align: top;
+            padding: 10px;
+
+            pre {
+                margin: 0;
+            }
+
+            &:nth-child(2) {
+                background: #eee;
+            }
+        }
+    }
+}

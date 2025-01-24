@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!--
+  *  Copyright © Above The Fray Design, Inc. All rights reserved.
+  *  See ATF_COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Config\Model\Config\TypePool">
+        <arguments>
+            <argument name="sensitive" xsi:type="array">
+                <item name="tax/zamp_configuration/api_secret" xsi:type="string">1</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Add custom logger -->
+    <type name="ATF\Zamp\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="ATF\Zamp\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">ATF_Zamp_Tax</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">ATF\Zamp\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Checkout Implementation -->
+    <preference for="Magento\Tax\Model\TaxCalculation" type="ATF\Zamp\Preference\Model\TaxCalculation"/>
+    <preference for="Magento\Tax\Model\Calculation\CalculatorFactory"
+                type="ATF\Zamp\Preference\Model\Calculation\CalculatorFactory"/>
+    <type name="Magento\Tax\Model\Sales\Total\Quote\CommonTaxCollector">
+        <plugin name="atf_zamp_plugin_common_tax_apply_product"
+                type="ATF\Zamp\Plugin\Tax\Model\Sales\Total\Quote\CommonTaxCollectorMapItemProduct"/>
+        <plugin name="atf_zamp_plugin_common_tax_apply_quote"
+                type="ATF\Zamp\Plugin\Tax\Model\Sales\Total\Quote\CommonTaxCollectorQuote"/>
+    </type>
+    <type name="Magento\Tax\Model\Calculation">
+        <plugin name="atf_zamp_plugin_model_calculation_request_cache_key"
+                type="ATF\Zamp\Plugin\Model\CalculationRequestCacheKey"/>
+    </type>
+    <preference for="Magento\Bundle\Pricing\Price\TaxPrice"
+                type="ATF\Zamp\Preference\Bundle\Pricing\Price\TaxPriceBundleZamp"/>
+    <type name="Magento\Quote\Model\Quote\Item\ToOrderItem">
+        <plugin name="atf_zamp_plugin_copy_quote_item_product_code_to_sales_order_items"
+                type="ATF\Zamp\Plugin\Quote\CopyProductCodeToSalesOrderItem"/>
+    </type>
+
+    <virtualType name="ATF\Zamp\Model\ResourceModel\TransactionLog\Grid\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">zamp_transaction_log</argument>
+            <argument name="resourceModel" xsi:type="string">ATF\Zamp\Model\ResourceModel\TransactionLog</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Historical Transaction / Transaction Log -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="zamp_historical_transaction_sync_listing_data_source" xsi:type="string">
+                    ATF\Zamp\Model\ResourceModel\Order\Grid\Collection
+                </item>
+                <item name="zamp_historical_transaction_queue_listing_data_source" xsi:type="string">
+                    ATF\Zamp\Model\ResourceModel\HistoricalTransactionSyncQueue\Grid\Collection
+                </item>
+                <item name="zamp_transaction_log_listing_data_source" xsi:type="string">
+                    ATF\Zamp\Model\ResourceModel\TransactionLog\Grid\Collection
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Fix for adding zamp_transaction_id to grid tables when record does not yet exist -->
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Invoice\Grid"
+                 type="Magento\Sales\Model\ResourceModel\Grid">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="zamp_transaction_id" xsi:type="string">sales_invoice.zamp_transaction_id</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="CreditmemoGridAggregator" type="Magento\Sales\Model\ResourceModel\Grid">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="zamp_transaction_id" xsi:type="string">sales_creditmemo.zamp_transaction_id</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Company\Model\Company\DataProvider">
+        <plugin name="atf_zamp_plugin_model_company_dataprovider_meta"
+                type="ATF\Zamp\Plugin\Model\Company\DataProvider\MetaChanges"/>
+    </type>
+</config>

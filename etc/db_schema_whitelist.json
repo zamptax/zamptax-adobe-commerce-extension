@@ -1,0 +1,89 @@
+{
+    "sales_order": {
+        "column": {
+            "zamp_customer_tax_exempt_code": true,
+            "is_zamp_tax_calculated": true
+        }
+    },
+    "sales_order_item": {
+        "column": {
+            "tax_provider_tax_code": true
+        }
+    },
+    "quote": {
+        "column": {
+            "is_zamp_tax_calculated": true
+        }
+    },
+    "queue_zamp_historical_transaction_sync": {
+        "column": {
+            "entity_id": true,
+            "batch_id": true,
+            "order_id": true,
+            "created_at": true,
+            "updated_at": true,
+            "body_request": true,
+            "response_data": true,
+            "transaction_type": true,
+            "status": true,
+            "invoice_id": true,
+            "creditmemo_id": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_9B051433A1ACEF4881BB15BE01E5AA29": true
+        }
+    },
+    "sales_invoice": {
+        "column": {
+            "zamp_transaction_id": true
+        },
+        "index": {
+            "SALES_INVOICE_ZAMP_TRANSACTION_ID": true
+        }
+    },
+    "sales_invoice_grid": {
+        "column": {
+            "zamp_transaction_id": true
+        },
+        "index": {
+            "SALES_INVOICE_GRID_ZAMP_TRANSACTION_ID": true
+        }
+    },
+    "sales_creditmemo": {
+        "column": {
+            "zamp_transaction_id": true
+        },
+        "index": {
+            "SALES_CREDITMEMO_ZAMP_TRANSACTION_ID": true
+        }
+    },
+    "sales_creditmemo_grid": {
+        "column": {
+            "zamp_transaction_id": true
+        },
+        "index": {
+            "SALES_CREDITMEMO_GRID_ZAMP_TRANSACTION_ID": true
+        }
+    },
+    "sales_invoice_item": {
+        "column": {
+            "tax_provider_tax_code": true
+        }
+    },
+    "zamp_transaction_log": {
+        "column": {
+            "log_id": true,
+            "created_at": true,
+            "updated_at": true,
+            "request": true,
+            "response": true,
+            "endpoint": true,
+            "http_method": true,
+            "status": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

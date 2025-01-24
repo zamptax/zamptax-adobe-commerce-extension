@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+  * Copyright © Above The Fray Design, Inc. All rights reserved.
+  * See ATF_COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Checkout\Block\Cart\CartTotalsProcessor">
+        <plugin name="atf_zamp_cart_layout_processor_plugin"
+                type="ATF\Zamp\Plugin\Checkout\LayoutProcessorPlugin"/>
+    </type>
+    <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
+        <plugin name="atf_zamp_checkout_layout_processor_plugin"
+                type="ATF\Zamp\Plugin\Checkout\LayoutProcessorPlugin"/>
+    </type>
+    <type name="Magento\Checkout\Model\DefaultConfigProvider">
+        <plugin name="atf_zamp_plugin_checkout_config_provider_plugin"
+                type="ATF\Zamp\Plugin\Model\CheckoutConfigProviderPlugin" />
+    </type>
+</config>

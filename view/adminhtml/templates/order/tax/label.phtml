@@ -1,0 +1,28 @@
+<?php declare(strict_types=1);
+/**
+ *  Copyright © Above The Fray Design, Inc. All rights reserved.
+ *  See ATF_COPYING.txt for license details.
+ */
+
+/** @var AbstractItems $block */
+/** @var Escaper $escaper */
+
+/** @var TaxViewModel $taxViewModel */
+
+use ATF\Zamp\ViewModel\TaxViewModel;
+use Magento\Framework\Escaper;
+use Magento\Sales\Block\Adminhtml\Items\AbstractItems;
+
+$taxViewModel = $block->getData('view_model');
+$taxLabel = $taxViewModel->getTaxLabel($block->getOrder(), 'Tax');
+?>
+
+<script>
+    require(['jquery'], function ($) {
+        'use strict';
+
+        $('th.col-tax').html('<span><?= $escaper->escapeJs($taxLabel) ?> Amount</span>');
+        $('th.col-tax-amount').html('<span><?= $escaper->escapeJs($taxLabel) ?> Amount</span>');
+        $('th.col-tax-percent').html('<span><?= $escaper->escapeJs($taxLabel) ?> Percent</span>');
+    });
+</script>

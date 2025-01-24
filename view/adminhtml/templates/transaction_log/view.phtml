@@ -1,0 +1,57 @@
+<?php
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+
+/**
+ * @var ATF\Zamp\Block\Adminhtml\TransactionLog\View $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$logData = $block->getTransactionLogData()
+?>
+
+<table class="transaction-log">
+    <colgroup>
+        <col style="width: 20%">
+        <col style="width: 80%">
+    </colgroup>
+    <tbody>
+        <tr>
+            <td><?= $escaper->escapeHtml(__('Date Created')) ?></td>
+            <td><pre><?= $escaper->escapeHtml($logData->getCreatedAt()) ?></pre></td>
+        </tr>
+        <tr>
+            <td><?= $escaper->escapeHtml(__('Status')) ?></td>
+            <td><pre><?= $escaper->escapeHtml($block->getStatusLabel($logData->getStatus())) ?></pre></td>
+        </tr>
+        <tr>
+            <td><?= $escaper->escapeHtml(__('Endpoint')) ?></td>
+            <td><pre><?= $escaper->escapeHtml($logData->getEndpoint()) ?></pre></td>
+        </tr>
+        <tr>
+            <td><?= $escaper->escapeHtml(__('HTTP Method')) ?></td>
+            <td><pre><?= $escaper->escapeHtml($logData->getHttpMethod()) ?></pre></td>
+        </tr>
+        <tr>
+            <td><?= $escaper->escapeHtml(__('Request')) ?></td>
+            <td><pre id="log-request"></pre></td>
+        </tr>
+        <tr>
+            <td><?= $escaper->escapeHtml(__('Response')) ?></td>
+            <td><pre id="log-response"></pre></td>
+        </tr>
+    </tbody>
+</table>
+<?php
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+
+$scriptString = <<<script
+//<![CDATA[ '
+    document.getElementById("log-request").innerHTML = JSON.stringify({$logData->getRequest()}, undefined, 2);
+    document.getElementById("log-response").innerHTML = JSON.stringify({$logData->getResponse()}, undefined, 2);
+//]]>
+script;
+
+echo /** @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false);

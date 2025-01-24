@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+-->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">
+                zamp_transaction_log_listing.zamp_transaction_log_listing_data_source
+            </item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>zamp_transaction_log_columns</spinner>
+        <deps>
+            <dep>zamp_transaction_log_listing.zamp_transaction_log_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="zamp_transaction_log_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">log_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>ATF_Zamp::transaction_log</aclResource>
+        <dataProvider name="zamp_transaction_log_listing_data_source"
+                      class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>main_table.log_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <paging name="listing_paging"/>
+        <exportButton name="export_button"/>
+    </listingToolbar>
+    <columns name="zamp_transaction_log_columns">
+        <selectionsColumn name="ids" component="Magento_Ui/js/grid/columns/multiselect">
+            <settings>
+                <indexField>log_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="log_id">
+            <settings>
+                <label translate="true">Log ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Date</label>
+            </settings>
+        </column>
+        <column name="status" class="ATF\Zamp\Ui\Component\Listing\Column\TransactionLog\Status">
+            <settings>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="request" class="ATF\Zamp\Ui\Component\Listing\Column\TransactionLog\TruncatedText">
+            <settings>
+                <label translate="true">Request</label>
+                <fieldClass>
+                    <class name="break-text">true</class>
+                </fieldClass>
+            </settings>
+        </column>
+        <column name="response" class="ATF\Zamp\Ui\Component\Listing\Column\TransactionLog\TruncatedText">
+            <settings>
+                <label translate="true">Response</label>
+                <fieldClass>
+                    <class name="break-text">true</class>
+                </fieldClass>
+            </settings>
+        </column>
+        <column name="endpoint">
+            <settings>
+                <label translate="true">Endpoint</label>
+            </settings>
+        </column>
+        <column name="http_method">
+            <settings>
+                <label translate="true">HTTP Method</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="ATF\Zamp\Ui\Component\Listing\Column\TransactionLog\Actions"/>
+    </columns>
+</listing>

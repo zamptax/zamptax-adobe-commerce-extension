@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Magento\Sales\Block\Adminhtml\Order\Invoice\View\Form" name="zamp_id"
+                   template="ATF_Zamp::order/invoice/view/details.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

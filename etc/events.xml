@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+  *  Copyright © Above The Fray Design, Inc. All rights reserved.
+  *  See ATF_COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="tax_rate_data_fetch">
+        <observer name="ATF_Zamp::zamp_tax_rate_overwrite" instance="ATF\Zamp\Observer\ImplementTaxRateZamp"/>
+    </event>
+
+    <event name="sales_model_service_quote_submit_before">
+        <observer name="ATF_Zamp::save_customer_tax_exempt_code"
+                  instance="ATF\Zamp\Observer\SaveCustomerTaxExemptCode" />
+        <observer name="ATF_Zamp::observer_sales_model_service_quote_submit_before"
+                  instance="ATF\Zamp\Observer\SaveOrderBeforeSalesModelQuoteObserver" />
+    </event>
+
+    <event name="sales_order_invoice_save_after">
+        <observer name="ATF_Zamp::send_transaction_to_zamp" instance="ATF\Zamp\Observer\SendTransactionToZamp"/>
+    </event>
+
+    <event name="layout_load_before">
+        <observer name="ATF_Zamp::add_update_tax_block" instance="ATF\Zamp\Observer\AddUpdateTaxBlock"/>
+    </event>
+
+    <!-- Refund Process Observer -->
+    <event name="sales_order_creditmemo_save_after">
+        <observer name="ATF_Zamp::send_refund_to_zamp" instance="ATF\Zamp\Observer\SendRefundToZamp"/>
+    </event>
+
+    <event name="zamp_transaction_sync_after">
+        <observer name="ATF_Zamp::queue_related_creditmemo" instance="ATF\Zamp\Observer\QueueCreditmemo"/>
+    </event>
+</config>

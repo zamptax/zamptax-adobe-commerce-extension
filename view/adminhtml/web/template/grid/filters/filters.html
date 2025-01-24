@@ -1,0 +1,20 @@
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+-->
+
+<scope args="chips" render=""></scope>
+
+<div class="admin__data-grid-filters-wrap" data-part="filter-form" css="_show: hasVisible()"
+     keyboard="{ 13: apply }">
+    <fieldset class="admin__fieldset admin__data-grid-filters">
+        <legend class="admin__filters-legend">
+            <span translate="'Advanced filter'"></span>
+        </legend>
+        <fieldset class="admin__form-field" outereach="getRanges()" visible="$parent.isFilterVisible($data)"
+                  render=""></fieldset>
+        <div class="admin__form-field" outereach="getPlain()" visible="$parent.isFilterVisible($data)" render=""></div>
+    </fieldset>
+</div>

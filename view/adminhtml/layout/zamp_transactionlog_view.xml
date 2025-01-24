@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="ATF\Zamp\Block\Adminhtml\TransactionLog\Container" name="transaction_log_container"/>
+            <block class="ATF\Zamp\Block\Adminhtml\TransactionLog\View" template="ATF_Zamp::transaction_log/view.phtml"
+                   name="transaction_log_view"/>
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <uiComponent name="zamp_historical_transaction_sync_listing"/>
+            <block class="ATF\Zamp\Block\Adminhtml\HistoricalTransaction\Sync" name="historical_transaction_sync"/>
+            <block class="Magento\Backend\Block\Template" template="ATF_Zamp::historical_transactions/button.phtml"
+                   name="historical_transaction.button"/>
+        </referenceContainer>
+    </body>
+</page>

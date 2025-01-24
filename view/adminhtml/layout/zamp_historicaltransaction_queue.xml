@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="ATF_Zamp::css/lib/loading-bar.min.css" rel="stylesheet" type="text/css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <uiComponent name="zamp_historical_transaction_queue_listing"/>
+            <block class="ATF\Zamp\Block\Adminhtml\HistoricalTransaction\Queue"
+                   template="ATF_Zamp::historical_transactions/loader.phtml"
+                   name="historical_transaction.queue_loader" before="-"/>
+        </referenceContainer>
+    </body>
+</page>

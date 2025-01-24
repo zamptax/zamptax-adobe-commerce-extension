@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+-->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">
+                zamp_historical_transaction_queue_listing.zamp_historical_transaction_queue_listing_data_source
+            </item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>zamp_historical_transaction_queue_columns</spinner>
+        <deps>
+            <dep>zamp_historical_transaction_queue_listing.zamp_historical_transaction_queue_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="zamp_historical_transaction_queue_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>ATF_Zamp::historical_transaction_sync_queue</aclResource>
+        <dataProvider name="zamp_historical_transaction_queue_listing_data_source"
+                      class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>main_table.entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <paging name="listing_paging"/>
+        <exportButton name="export_button"/>
+    </listingToolbar>
+    <columns name="zamp_historical_transaction_queue_columns">
+        <selectionsColumn name="ids" component="Magento_Ui/js/grid/columns/multiselect">
+            <settings>
+                <indexField>entity_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="entity_id">
+            <settings>
+                <label translate="true">Queue ID</label>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Date</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="increment_id">
+            <settings>
+                <label translate="true">Order #</label>
+            </settings>
+        </column>
+        <column name="transaction_type" class="ATF\Zamp\Ui\Component\Listing\Column\Queue\TransactionType">
+            <settings>
+                <label translate="true">Transaction Type</label>
+            </settings>
+        </column>
+        <column name="batch_id">
+            <settings>
+                <label translate="true">Batch ID</label>
+            </settings>
+        </column>
+        <column name="status" class="ATF\Zamp\Ui\Component\Listing\Column\Queue\Status">
+            <settings>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+    </columns>
+</listing>

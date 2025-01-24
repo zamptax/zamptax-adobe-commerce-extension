@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<!--
+  * Copyright © Above The Fray Design, Inc. All rights reserved.
+  * See ATF_COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="tax">
+            <group id="zamp_configuration"
+                   translate="label comment"
+                   showInDefault="1"
+                   showInWebsite="1"
+                   sortOrder="0">
+                <label>Zamp Configuration</label>
+
+                <field id="active"
+                       translate="label"
+                       type="select"
+                       sortOrder="10"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       canRestore="1">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id='api_secret'
+                       translate='label'
+                       type='obscure'
+                       sortOrder='20'
+                       showInDefault='1'
+                       showInWebsite='1'>
+                    <label>API Token</label>
+                    <backend_model>ATF\Zamp\Model\Config\Backend\Encrypted</backend_model>
+                    <validate>required-entry</validate>
+                    <depends>
+                        <field id="tax/zamp_configuration/active">1</field>
+                    </depends>
+                </field>
+
+                <field id="validate_token"
+                       translate="button_label"
+                       sortOrder="30"
+                       showInDefault="1"
+                       showInWebsite="1">
+                    <button_label>Test connection</button_label>
+                    <frontend_model>ATF\Zamp\Block\Adminhtml\System\Config\ValidateToken</frontend_model>
+                    <depends>
+                        <field id="tax/zamp_configuration/active">1</field>
+                    </depends>
+                </field>
+
+                <field id="taxable_states"
+                       translate="label"
+                       type="multiselect"
+                       sortOrder="40"
+                       showInDefault="1"
+                       showInWebsite="1">
+                    <label>Choose your taxable states</label>
+                    <source_model>ATF\Zamp\Model\Config\Region\RegionInformationProvider</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <depends>
+                        <field id="tax/zamp_configuration/active">1</field>
+                    </depends>
+                </field>
+
+                <field id="allow_tax_calculation"
+                       translate="label"
+                       type="select"
+                       sortOrder="50"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       canRestore="1">
+                    <label>Allow Zamp to handle your Tax Calculations?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="tax/zamp_configuration/active">1</field>
+                    </depends>
+                </field>
+
+                <field id="send_transactions"
+                       translate="label"
+                       type="select"
+                       sortOrder="60"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       canRestore="1">
+                    <label>Send your transaction reports to Zamp?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="tax/zamp_configuration/active">1</field>
+                    </depends>
+                </field>
+
+                <field id="default_product_tax_provider_tax_code"
+                       translate="label"
+                       type="text"
+                       sortOrder="70"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       canRestore="1">
+                    <label>Default Product Tax Provider Tax Code</label>
+                    <validate>required-entry</validate>
+                    <depends>
+                        <field id="tax/zamp_configuration/active">1</field>
+                    </depends>
+                </field>
+
+                <field id="enable_logging"
+                       translate="label"
+                       type="select"
+                       sortOrder="80"
+                       showInDefault="1"
+                       showInWebsite="1"
+                       canRestore="1">
+                    <label>Enable Logging</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="tax/zamp_configuration/active">1</field>
+                    </depends>
+                </field>
+
+                <field id="log_lifetime"
+                       translate="label"
+                       type="text"
+                       sortOrder="90"
+                       showInDefault="1"
+                       showInWebsite="0"
+                       canRestore="1">
+                    <label>Log Entry Lifetime, Days</label>
+                    <validate>validate-number</validate>
+                    <backend_model>ATF\Zamp\Model\System\Config\Backend\LogLifetime</backend_model>
+                    <depends>
+                        <field id="tax/zamp_configuration/enable_logging">1</field>
+                    </depends>
+                    <comment><![CDATA[
+                        Transaction log lifetime in days. If field is empty or less than 30 default value 30 will be
+                        saved.
+                        ]]>
+                    </comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

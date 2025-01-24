@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+-->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">
+                zamp_historical_transaction_sync_listing.zamp_historical_transaction_sync_listing_data_source
+            </item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>zamp_historical_transaction_sync_columns</spinner>
+        <deps>
+            <dep>zamp_historical_transaction_sync_listing.zamp_historical_transaction_sync_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="zamp_historical_transaction_sync_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>ATF_Zamp::historical_transaction</aclResource>
+        <dataProvider name="zamp_historical_transaction_sync_listing_data_source"
+                      class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>main_table.entity_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <paging name="listing_paging"/>
+        <bookmark name="bookmarks"/>
+        <filters name="listing_filters">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="template" xsi:type="string">ATF_Zamp/grid/filters/filters</item>
+                    <item name="templates" xsi:type="array">
+                        <item name="filters" xsi:type="array">
+                            <item name="dateRange" xsi:type="array">
+                                <item name="component" xsi:type="string">ATF_Zamp/js/grid/filters/range</item>
+                            </item>
+                        </item>
+                    </item>
+                </item>
+            </argument>
+        </filters>
+        <massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">
+            <action name="sync">
+                <settings>
+                    <type>sync</type>
+                    <label translate="true">Sync</label>
+                    <url path="*/*/massSync"/>
+                </settings>
+            </action>
+        </massaction>
+    </listingToolbar>
+    <columns name="zamp_historical_transaction_sync_columns">
+        <selectionsColumn name="ids" component="ATF_Zamp/js/grid/columns/multiselect">
+            <settings>
+                <indexField>entity_id</indexField>
+                <preserveSelectionsOnFilter>true</preserveSelectionsOnFilter>
+            </settings>
+        </selectionsColumn>
+        <column name="increment_id">
+            <settings>
+                <label translate="true">ID</label>
+            </settings>
+        </column>
+        <column name="store_id" class="Magento\Store\Ui\Component\Listing\Column\Store">
+            <settings>
+                <label translate="true">Purchase Point</label>
+                <bodyTmpl>ui/grid/cells/html</bodyTmpl>
+                <sortable>false</sortable>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Purchase Date</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="billing_name">
+            <settings>
+                <label translate="true">Bill-to Name</label>
+            </settings>
+        </column>
+        <column name="shipping_name">
+            <settings>
+                <label translate="true">Ship-to Name</label>
+            </settings>
+        </column>
+        <column name="base_grand_total" class="Magento\Sales\Ui\Component\Listing\Column\Price">
+            <settings>
+                <label translate="true">Grand Total (Base)</label>
+            </settings>
+        </column>
+        <column name="grand_total" class="Magento\Sales\Ui\Component\Listing\Column\PurchasedPrice">
+            <settings>
+                <label translate="true">Grand Total (Purchased)</label>
+            </settings>
+        </column>
+        <column name="status" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <options class="Magento\Sales\Ui\Component\Listing\Column\Status\Options"/>
+                <dataType>select</dataType>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="subtotal" class="Magento\Sales\Ui\Component\Listing\Column\Price">
+            <settings>
+                <label translate="true">Subtotal</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+    </columns>
+</listing>

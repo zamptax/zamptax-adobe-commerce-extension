@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <!-- filler to show menu title (magento bug) -->
+        <add id="ATF_Zamp::filler" title="filler" translate="title" module="ATF_Zamp"
+             resource="ATF_Zamp::zamp"
+             parent="Magento_Sales::sales"
+             sortOrder="900"/>
+        <add id="ATF_Zamp::zamp" title="Zamp Historical Transactions" translate="title" module="ATF_Zamp"
+             resource="ATF_Zamp::zamp"
+             parent="Magento_Sales::sales"
+             sortOrder="900"/>
+        <add id="ATF_Zamp::historical_transaction" title="Sync" translate="title"
+             module="ATF_Zamp"
+             resource="ATF_Zamp::historical_transaction"
+             parent="ATF_Zamp::zamp"
+             action="zamp/historicalTransaction"/>
+        <add id="ATF_Zamp::historical_transaction_queue" title="Queue" translate="title"
+             module="ATF_Zamp"
+             resource="ATF_Zamp::historical_transaction_sync_queue"
+             parent="ATF_Zamp::zamp"
+             action="zamp/historicalTransaction/queue"/>
+
+        <add id="ATF_Zamp::transaction_log" title="Zamp Transaction Logs" translate="title" module="ATF_Zamp"
+             parent="Magento_Backend::system_other_settings"
+             resource="ATF_Zamp::transaction_log"
+             action="zamp/transactionLog"/>
+    </menu>
+</config>

@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <plugin name="zampGridDataProviderPlugin"
+                type="ATF\Zamp\Plugin\Framework\UiComponent\DataProvider\HistoricalTransactionProvider"/>
+    </type>
+
+    <virtualType name="Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Pool">
+        <arguments>
+            <argument name="modifiers" xsi:type="array">
+                <item name="tax_provider_tax_code" xsi:type="array">
+                    <item name="class" xsi:type="string">
+                        ATF\Zamp\Ui\DataProvider\Product\Form\Modifier\Products
+                    </item>
+                    <item name="sortOrder" xsi:type="number">110</item>
+                </item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Customer\Model\Customer\DataProviderWithDefaultAddresses">
+        <plugin name="atf_account_balance_plugin_customer_form_data"
+                type="ATF\Zamp\Plugin\Model\Customer\CustomerFormData"/>
+    </type>
+
+    <preference for="Magento\Sales\Model\Order\Pdf\Invoice"
+                type="ATF\Zamp\Preference\Model\Order\Pdf\Invoice"/>
+    <preference for="Magento\Sales\Model\Order\Pdf\Creditmemo"
+                type="ATF\Zamp\Preference\Model\Order\Pdf\Creditmemo"/>
+
+    <preference for="Magento\Quote\Model\Quote\Address\Total"
+                type="ATF\Zamp\Preference\Model\Quote\Address\Total"/>
+    <type name="ATF\Zamp\Preference\Model\Quote\Address\Total">
+        <plugin name="atf_quote_address_total"
+                type="ATF\Zamp\Plugin\Model\Quote\Address\Total"/>
+    </type>
+
+    <type name="Magento\Ui\Model\Export\MetadataProvider">
+        <plugin name="ATF_Zamp::gridExportColumnPlugin"
+                type="ATF\Zamp\Plugin\Model\Export\GridExportColumn"/>
+    </type>
+
+    <type name="Magento\Framework\Notification\MessageList">
+        <arguments>
+            <argument name="messages" xsi:type="array">
+                <item name="ATF_Zamp::historicalTransactionSyncComplete" xsi:type="string">
+                    ATF\Zamp\Model\System\Message\HistoricalTransactionSyncComplete
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Sales\Block\Adminhtml\Order\Invoice\View">
+        <plugin name="atf_zamp_add_re_sync_in_zamp_button_to_sales_invoice_view"
+                type="ATF\Zamp\Plugin\Block\Adminhtml\Order\Invoice\AddReSyncInZampButtonToSalesInvoiceView" />
+    </type>
+
+    <type name="Magento\Sales\Block\Adminhtml\Order\Creditmemo\View">
+        <plugin name="atf_zamp_add_re_sync_in_zamp_button_to_sales_credit_memo_view"
+                type="ATF\Zamp\Plugin\Block\Adminhtml\Order\Creditmemo\AddReSyncInZampButtonToSalesCreditMemoView" />
+    </type>
+</config>

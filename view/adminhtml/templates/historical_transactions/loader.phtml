@@ -1,0 +1,54 @@
+<?php
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+
+use ATF\Zamp\Block\Adminhtml\HistoricalTransaction\Queue;
+use ATF\Zamp\Helper\Queue as QueueHelper;
+use Magento\Framework\Escaper;
+
+/**
+ * @var Queue $block
+ * @var Escaper $escaper
+ */
+
+$progress = $block->getQueueProgress();
+$total = $block->getQueueTotal();
+$syncCompleteMessage = __('No transactions to sync.');
+?>
+<?php if ($total > 0): ?>
+    <?php if ($progress === QueueHelper::PROGRESS_COMPLETE): ?>
+        <div class="queue-message message">
+            <span><?= $escaper->escapeHtml($syncCompleteMessage); ?></span>
+        </div>
+    <?php else: ?>
+        <div class="queue-loader queue-message message" data-bind="scope: 'queueProgress'">
+            <span><?= $escaper->escapeHtml(__('Sync is running in the background.')) ?></span>
+            <div data-preset="stripe" class="ldBar"
+                 title="<?= $escaper->escapeHtmlAttr($progress) ?>%"></div>
+        </div>
+
+        <?php $statusUrl = $block->getUrl('zamp/historicalTransaction/status'); ?>
+        <script type="text/x-magento-init">
+            {
+                "*": {
+                    "Magento_Ui/js/core/app": {
+                        "components": {
+                            "queueProgress": {
+                                "component": "ATF_Zamp/js/grid/sync-progress",
+                                "config": {
+                                    "parentSelector": ".queue-message",
+                                    "loadBarSelector": ".ldBar",
+                                    "statusUrl": "<?= $escaper->escapeUrl($statusUrl) ?>",
+                                    "initialProgress": "<?= $escaper->escapeJs($progress) ?>",
+                                    "syncCompleteMessage": "<?= $escaper->escapeJs($syncCompleteMessage) ?>"
+                                }
+                            }
+                        }
+                    }
+                }
+          }
+        </script>
+    <?php endif; ?>
+<?php endif; ?>

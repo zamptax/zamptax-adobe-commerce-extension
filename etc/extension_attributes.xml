@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+  *  Copyright © Above The Fray Design, Inc. All rights reserved.
+  *  See ATF_COPYING.txt for license details.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Api/etc/extension_attributes.xsd">
+    <extension_attributes for="Magento\Tax\Api\Data\QuoteDetailsInterface">
+        <attribute code="zamp_quote_id" type="int"/>
+        <attribute code="zamp_quote_shipping_amount" type="int"/>
+        <attribute code="zamp_quote_updated_at" type="string"/>
+    </extension_attributes>
+
+    <extension_attributes for="Magento\Tax\Api\Data\QuoteDetailsItemInterface">
+        <attribute code="product_id" type="string"/>
+        <attribute code="product_name" type="string"/>
+        <attribute code="product_sku" type="string"/>
+        <attribute code="product_tax_code" type="string"/>
+
+        <attribute code="zamp_price" type="string"/>
+        <attribute code="zamp_tax_info" type="string"/>
+    </extension_attributes>
+</config>

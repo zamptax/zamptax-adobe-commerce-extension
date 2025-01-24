@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+/**
+ *  Copyright © Above The Fray Design, Inc. All rights reserved.
+ *  See ATF_COPYING.txt for license details.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <referenceBlock name="tax" template="ATF_Zamp::order/tax.phtml">
+        <arguments>
+            <argument name="view_model" xsi:type="object">ATF\Zamp\ViewModel\TaxViewModel</argument>
+        </arguments>
+    </referenceBlock>
+</page>

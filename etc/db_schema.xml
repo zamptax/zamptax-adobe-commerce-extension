@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Above The Fray Design, Inc. All rights reserved.
+ * See ATF_COPYING.txt for license details.
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="sales_order">
+        <column name="zamp_customer_tax_exempt_code" xsi:type="varchar" nullable="true" length="255"
+                comment="Zamp Customer Tax Exempt Code"/>
+        <column name="is_zamp_tax_calculated" xsi:type="boolean" nullable="false"
+                default="0" comment="Is Zamp Tax Calculated"/>
+    </table>
+    <table name="sales_invoice">
+        <column name="zamp_transaction_id" xsi:type="varchar" nullable="true" length="255"
+                comment="Zamp Transaction ID"/>
+        <index referenceId="SALES_INVOICE_ZAMP_TRANSACTION_ID" indexType="btree">
+            <column name="zamp_transaction_id"/>
+        </index>
+    </table>
+    <table name="sales_invoice_grid">
+        <column name="zamp_transaction_id" xsi:type="varchar" nullable="true" length="255"
+                comment="Zamp Transaction ID"/>
+        <index referenceId="SALES_INVOICE_GRID_ZAMP_TRANSACTION_ID" indexType="btree">
+            <column name="zamp_transaction_id"/>
+        </index>
+    </table>
+    <table name="sales_creditmemo">
+        <column name="zamp_transaction_id" xsi:type="varchar" nullable="true" length="255"
+                comment="Zamp Transaction ID"/>
+        <index referenceId="SALES_CREDIT_MEMO_ZAMP_TRANSACTION_ID" indexType="btree">
+            <column name="zamp_transaction_id"/>
+        </index>
+    </table>
+    <table name="sales_creditmemo_grid">
+        <column name="zamp_transaction_id" xsi:type="varchar" nullable="true" length="255"
+                comment="Zamp Transaction ID"/>
+        <index referenceId="SALES_CREDIT_MEMO_GRID_ZAMP_TRANSACTION_ID" indexType="btree">
+            <column name="zamp_transaction_id"/>
+        </index>
+    </table>
+    <table name="sales_order_item">
+        <column name="tax_provider_tax_code" xsi:type="varchar" nullable="true" length="255"
+                comment="Zamp Product Tax Code"/>
+    </table>
+    <table name="sales_invoice_item">
+        <column name="tax_provider_tax_code" xsi:type="varchar" nullable="true" length="255"
+                comment="Zamp Product Tax Code"/>
+    </table>
+    <table name="quote">
+        <column name="is_zamp_tax_calculated" xsi:type="boolean" nullable="false"
+                default="0" comment="Is Zamp Tax Calculated"/>
+    </table>
+
+    <table name="queue_zamp_historical_transaction_sync"
+           comment="Zamp queue table">
+        <column xsi:type="int"
+                name="entity_id"
+                unsigned="false"
+                nullable="false"
+                identity="true"/>
+        <column xsi:type="int"
+                name="batch_id"
+                padding="11"
+                unsigned="true"
+                nullable="false"
+                identity="false"
+                default="0"/>
+        <column xsi:type="int"
+                name="order_id"
+                padding="11"
+                unsigned="true"
+                nullable="false"
+                identity="false"
+                default="0"/>
+        <column xsi:type="timestamp"
+                name="created_at"
+                on_update="false"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"/>
+        <column xsi:type="timestamp"
+                name="updated_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"/>
+        <column xsi:type="longtext" name="body_request" nullable="true"/>
+        <column xsi:type="longtext" name="response_data" nullable="true"/>
+        <column xsi:type="int"
+                name="status"
+                padding="11"
+                unsigned="true"
+                nullable="false"
+                identity="false"
+                default="0"
+                onCreate="migrateDataFrom(is_success)"/>
+        <column name="transaction_type" xsi:type="varchar" nullable="true" length="255"
+                comment="Transaction Type"/>
+        <column xsi:type="int"
+                name="invoice_id"
+                padding="11"
+                unsigned="true"
+                nullable="true"
+                identity="false"/>
+        <column xsi:type="int"
+                name="creditmemo_id"
+                padding="11"
+                unsigned="true"
+                nullable="true"
+                identity="false"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="foreign"
+                    referenceId="QUEUE_ZAMP_HISTORICAL_TRANSACTION_SYNC_ORDER_ID_SALES_ORDER_ENTITY_ID"
+                    table="queue_zamp_historical_transaction_sync"
+                    column="order_id"
+                    referenceTable="sales_order"
+                    referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+    </table>
+
+    <table name="zamp_transaction_log"
+           comment="Zamp transaction log">
+        <column xsi:type="int"
+                name="log_id"
+                unsigned="false"
+                nullable="false"
+                identity="true"/>
+        <column xsi:type="timestamp"
+                name="created_at"
+                on_update="false"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"/>
+        <column xsi:type="timestamp"
+                name="updated_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"/>
+        <column xsi:type="longtext" name="request" nullable="true"/>
+        <column xsi:type="longtext" name="response" nullable="true"/>
+        <column name="endpoint" xsi:type="varchar" nullable="true" length="255"
+                comment="Endpoint"/>
+        <column name="http_method" xsi:type="varchar" nullable="true" length="255"
+                comment="Http Method"/>
+        <column xsi:type="smallint"
+                name="status"
+                padding="11"
+                unsigned="true"
+                nullable="true"
+                identity="false"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="log_id"/>
+        </constraint>
+    </table>
+</schema>

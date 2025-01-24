@@ -1,0 +1,33 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/**
+ * @var \Magento\Sales\Block\Adminhtml\Order\Creditmemo\View\Form $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
+ */
+?>
+
+<?php $creditMemo = $block->getCreditmemo(); ?>
+
+<?php if ($zampId = $creditMemo->getZampTransactionId()): ?>
+    <?php $html = <<<HTML
+    <tr>
+        <th>{$escaper->escapeHtml(__('Zamp ID'))}</th>
+        <td>{$escaper->escapeHtml($zampId)}</td>
+    </tr>
+HTML;
+    ?>
+
+    <?php $scriptString = <<<script
+    require(["jquery"], function($) {
+        $(".creditmemo-view-information .creditmemo-information-table tbody").append("{$escaper->escapeJs($html)}");
+    });
+script;
+    ?>
+    <?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
+
+<?php endif;

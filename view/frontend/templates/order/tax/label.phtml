@@ -1,0 +1,43 @@
+<?php declare(strict_types=1);
+/**
+ *  Copyright © Above The Fray Design, Inc. All rights reserved.
+ *  See ATF_COPYING.txt for license details.
+ */
+
+/** @var Totals $block */
+/** @var Escaper $escaper */
+
+/** @var TaxViewModel $taxViewModel */
+
+use ATF\Zamp\ViewModel\TaxViewModel;
+use Magento\Framework\Escaper;
+use Magento\Sales\Block\Order\Totals;
+
+$taxViewModel = $block->getData('view_model');
+$taxLabel = $taxViewModel->getTaxLabel($block->getOrder(), 'Tax');
+?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        'use strict';
+
+        let taxLabel = '<?= $escaper->escapeJs($taxLabel) ?>';
+        let taxHeaders = document.querySelectorAll('tr.totals-tax th');
+        let taxAmountCells = document.querySelectorAll('tr.totals-tax td.amount');
+        let hyvaElement = document.querySelectorAll('.border-container .grid > div');
+
+        hyvaElement.forEach(function (element) {
+            if (element.innerText.trim() === 'Tax') {
+                element.innerHTML = taxLabel;
+            }
+        });
+
+        taxHeaders.forEach(function (header) {
+            header.innerHTML = taxLabel;
+        });
+
+        taxAmountCells.forEach(function (cell) {
+            cell.setAttribute('data-th', taxLabel);
+        });
+    });
+</script>
