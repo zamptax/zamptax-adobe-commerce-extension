@@ -14,6 +14,7 @@ use ATF\Zamp\Model\ResourceModel\HistoricalTransactionSyncQueue as QueueResource
 use ATF\Zamp\Model\ResourceModel\HistoricalTransactionSyncQueue\CollectionFactory as QueueCollectionFactory;
 use ATF\Zamp\Model\Sales\CommentHandler;
 use ATF\Zamp\Model\Service\Transaction as TransactionService;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface as EventManager;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 
@@ -72,6 +73,11 @@ class ProcessQueue
     protected $commentHandler;
 
     /**
+     * @var ResourceConnection
+     */
+    protected $resourceConnection;
+
+    /**
      * @param QueueFactory $queueFactory
      * @param QueueResourceModel $queueResourceModel
      * @param QueueCollectionFactory $queueCollectionFactory
@@ -81,6 +87,8 @@ class ProcessQueue
      * @param Logger $logger
      * @param EventManager $eventManager
      * @param CommentHandler $commentHandler
+     * @param ResourceConnection $resourceConnection
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         QueueFactory $queueFactory,
@@ -91,7 +99,8 @@ class ProcessQueue
         JsonSerializer $json,
         Logger $logger,
         EventManager $eventManager,
-        CommentHandler $commentHandler
+        CommentHandler $commentHandler,
+        ResourceConnection $resourceConnection
     ) {
         $this->queueFactory = $queueFactory;
         $this->queueResourceModel = $queueResourceModel;
@@ -102,6 +111,7 @@ class ProcessQueue
         $this->logger = $logger;
         $this->eventManager = $eventManager;
         $this->commentHandler = $commentHandler;
+        $this->resourceConnection = $resourceConnection;
     }
 
     /**
@@ -206,9 +216,10 @@ class ProcessQueue
 
         $connection = $this->queueResourceModel->getConnection();
         if ($queue->getTransactionType() === HistoricalTransactionSyncQueue::TRANSACTION_TYPE_INVOICE) {
-            foreach (['sales_invoice', 'sales_invoice_grid'] as $tableName) {
+            foreach (['sales_invoice', 'sales_invoice_grid'] as $name) {
+                $tableName = $this->resourceConnection->getTableName($name);
                 $connection->update(
-                    $connection->getTableName($tableName),
+                    $tableName,
                     ['zamp_transaction_id' => $response['id']],
                     ['entity_id = ?' => $queue->getInvoiceId()]
                 );
@@ -226,9 +237,10 @@ class ProcessQueue
 
             $this->commentHandler->addInvoiceComment($queue->getInvoiceId(), $response['id']);
         } else {
-            foreach (['sales_creditmemo', 'sales_creditmemo_grid'] as $tableName) {
+            foreach (['sales_creditmemo', 'sales_creditmemo_grid'] as $name) {
+                $tableName = $this->resourceConnection->getTableName($name);
                 $connection->update(
-                    $connection->getTableName($tableName),
+                    $tableName,
                     ['zamp_transaction_id' => $response['id']],
                     ['entity_id = ?' => $queue->getCreditmemoId()]
                 );

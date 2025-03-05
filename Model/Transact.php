@@ -44,6 +44,11 @@ class Transact
     protected $commentHandler;
 
     /**
+     * @var ResourceConnection
+     */
+    protected $resource;
+
+    /**
      * @param TransactionObjectFactory $transactionObjectFactory
      * @param Transaction $transactionService
      * @param ResourceConnection $resource
@@ -62,6 +67,7 @@ class Transact
         $this->payloadItems = $payloadItems;
         $this->connection = $resource->getConnection();
         $this->commentHandler = $commentHandler;
+        $this->resource = $resource;
     }
 
     /**
@@ -122,9 +128,10 @@ class Transact
      */
     private function saveZampTransId(string|int $id = 0, string $incrementId = ''): void
     {
-        foreach (['sales_invoice', 'sales_invoice_grid'] as $tableName) {
+        foreach (['sales_invoice', 'sales_invoice_grid'] as $name) {
+            $tableName = $this->resource->getTableName($name);
             $this->connection->update(
-                $this->connection->getTableName($tableName),
+                $tableName,
                 ['zamp_transaction_id' => $id],
                 ['increment_id = ?' => $incrementId]
             );
