@@ -15,6 +15,7 @@ use ATF\Zamp\Model\ResourceModel\HistoricalTransactionSyncQueue\Collection;
 use ATF\Zamp\Model\ResourceModel\HistoricalTransactionSyncQueue\CollectionFactory as QueueCollectionFactory;
 use ATF\Zamp\Model\Sales\CommentHandler;
 use ATF\Zamp\Model\Service\Transaction as TransactionService;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Event\ManagerInterface as EventManager;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
@@ -83,6 +84,11 @@ class ProcessQueueTest extends TestCase
      */
     protected $commentHandler;
 
+    /**
+     * @var ResourceConnection|MockObject
+     */
+    protected $resourceConnection;
+
     protected function setUp(): void
     {
         $this->queueFactory = $this->createMock(QueueFactory::class);
@@ -103,6 +109,7 @@ class ProcessQueueTest extends TestCase
         $this->logger = $this->createMock(Logger::class);
         $this->eventManager =  $this->createMock(EventManager::class);
         $this->commentHandler = $this->createMock(CommentHandler::class);
+        $this->resourceConnection = $this->createMock(ResourceConnection::class);
 
         $this->cron = new ProcessQueue(
             $this->queueFactory,
@@ -113,7 +120,8 @@ class ProcessQueueTest extends TestCase
             $this->json,
             $this->logger,
             $this->eventManager,
-            $this->commentHandler
+            $this->commentHandler,
+            $this->resourceConnection
         );
     }
 
@@ -275,7 +283,7 @@ class ProcessQueueTest extends TestCase
             ->method('getConnection')
             ->willReturn($connection);
 
-        $connection->expects($this->exactly(4))
+        $this->resourceConnection->expects($this->exactly(4))
             ->method('getTableName')
             ->willReturnCallback(function ($param) {
                 return $param;
