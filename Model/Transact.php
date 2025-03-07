@@ -89,7 +89,7 @@ class Transact
                 'id' => $invoice->getId(),
                 'increment_id' => $invoice->getIncrementId(),
                 'customer_tax_exempt_code' => $order->getZampCustomerTaxExemptCode(),
-                'updated_at' => date('Y-m-d H:i:s'),
+                'updated_at' => $invoice->getCreatedAt(),
                 'shipping_amount' => (float)$invoice->getShippingAmount(),
                 'sub_total' => $invoice->getSubTotal(),
                 'discount_amount' => abs((float)$invoice->getDiscountAmount()),

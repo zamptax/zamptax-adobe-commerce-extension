@@ -97,7 +97,7 @@ class Refund
                 'parent_id' => (int)$invoice->getId(),
                 'increment_id' => $creditMemo->getIncrementId(),
                 'customer_tax_exempt_code' => $order->getZampCustomerTaxExemptCode(),
-                'updated_at' => date('Y-m-d H:i:s'),
+                'updated_at' => $creditMemo->getCreatedAt(),
                 'shipping_amount' => (float)$creditMemo->getShippingAmount(),
                 'sub_total' => $creditMemo->getSubTotal(),
                 'discount_amount' => (float)$creditMemo->getDiscountAmount(),
