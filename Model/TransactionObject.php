@@ -386,7 +386,7 @@ class TransactionObject extends DataObject
                     $lineItem->setProductName($extension->getProductName());
                     $lineItem->setProductTaxCode($extension->getProductTaxCode());
 
-                    $lineItem->setAmount($extension->getZampPrice())
+                    $lineItem->setAmount(round($extension->getZampPrice(), 2))
                         ->setDiscount((float)$item->getDiscountAmount())
                         ->setQuantity((int)$item->getQuantity());
                 }
