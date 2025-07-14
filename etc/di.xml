@@ -37,6 +37,8 @@
                 type="ATF\Zamp\Plugin\Tax\Model\Sales\Total\Quote\CommonTaxCollectorMapItemProduct"/>
         <plugin name="atf_zamp_plugin_common_tax_apply_quote"
                 type="ATF\Zamp\Plugin\Tax\Model\Sales\Total\Quote\CommonTaxCollectorQuote"/>
+        <plugin name="atf_zamp_plugin_common_tax_apply_shipping"
+                type="ATF\Zamp\Plugin\Tax\Model\Sales\Total\Quote\CommonTaxCollectorShipping"/>
     </type>
     <type name="Magento\Tax\Model\Calculation">
         <plugin name="atf_zamp_plugin_model_calculation_request_cache_key"

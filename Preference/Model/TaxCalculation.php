@@ -144,6 +144,7 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
     ) {
         $doZampCalc = $this->zampConfigurations->isModuleEnabled()
             && $this->zampConfigurations->isCalculationEnabled()
+            && is_object($quoteDetails->getShippingAddress())
             && $this->zampConfigurations->isTaxableState($quoteDetails->getShippingAddress());
 
         $this->setZampCalculation($doZampCalc);
