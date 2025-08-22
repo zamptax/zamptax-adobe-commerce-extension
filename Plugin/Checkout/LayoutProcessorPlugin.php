@@ -45,6 +45,7 @@ class LayoutProcessorPlugin
      * @param array $result
      * @param array $jsLayout
      * @return array
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterProcess(
         CartTotalsProcessor|CheckoutLayoutProcessor $subject,

@@ -16,6 +16,7 @@ class MetaChanges
      * @param DataProvider $subject
      * @param array $result
      * @return array
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterGetMeta(DataProvider $subject, array $result): array
     {

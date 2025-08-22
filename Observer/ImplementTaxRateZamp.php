@@ -14,7 +14,11 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Tax\Api\Data\QuoteDetailsItemInterface;
 use Magento\Tax\Model\Calculation;
+use Magento\Tax\Model\Sales\Total\Quote\Shipping;
 
+/**
+ * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+ */
 class ImplementTaxRateZamp implements ObserverInterface
 {
     /**
@@ -62,17 +66,24 @@ class ImplementTaxRateZamp implements ObserverInterface
 
             if (($extension = $item->getExtensionAttributes()) && $extension->getZampTaxInfo()) {
                 $taxInfo = $this->jsonSerializer->unserialize($extension->getZampTaxInfo());
-
                 $sender->setRateId($taxInfo['rateId']);
                 $sender->setRateTitle($taxInfo['rateTitle']);
-
                 $rateValue = 0;
-                foreach ($taxInfo['taxes'] as $tax) {
-                    if (isset($tax['taxRate']) && $tax['ancillaryType'] !== 'SHIPPING_HANDLING') {
-                        $rateValue += $tax['taxRate'] * 100;
-                        $sender->setRateValue($rateValue);
+                if ($item->getType() === Shipping::ITEM_CODE_SHIPPING) {
+                    foreach ($taxInfo['taxes'] as $tax) {
+                        if (isset($tax['taxRate']) && $tax['ancillaryType'] === 'SHIPPING_HANDLING') {
+                            $rateValue += $tax['taxRate'] * 100;
+                        }
+                    }
+                } else {
+                    foreach ($taxInfo['taxes'] as $tax) {
+                        if (isset($tax['taxRate']) && $tax['ancillaryType'] !== 'SHIPPING_HANDLING') {
+                            $rateValue += $tax['taxRate'] * 100;
+                        }
                     }
                 }
+
+                $sender->setRateValue($rateValue);
             }
         }
     }

@@ -374,6 +374,17 @@ class TransactionObject extends DataObject
                         ->setDiscount((float)$item->getDiscountAmount())
                         ->setQuantity((int)$item->getQty());
 
+                } elseif (is_array($item) && isset($item['fromShipping'])) {
+
+                    $lineItem->setId($item['productId']);
+                    $lineItem->setProductSku($item['productSku']);
+                    $lineItem->setProductName($item['productName']);
+                    $lineItem->setProductTaxCode($item['productTaxCode']);
+
+                    $lineItem->setAmount(round($item['zampPrice'], 2))
+                        ->setDiscount((float)$item['discount'])
+                        ->setQuantity((int)$item['quantity']);
+
                 } else {
                     $extension = $item->getExtensionAttributes();
 
