@@ -39,6 +39,7 @@ class CommonTaxCollectorMapItemProduct
      * @param QuoteDetailsItemInterfaceFactory $itemDataObjectFactory
      * @param AbstractItem $item
      * @return QuoteDetailsItemInterface
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterMapItem(
         CommonTaxCollector               $subject,

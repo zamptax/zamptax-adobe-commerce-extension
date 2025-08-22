@@ -20,5 +20,6 @@
 
         <attribute code="zamp_price" type="string"/>
         <attribute code="zamp_tax_info" type="string"/>
+        <attribute code="zamp_items" type="array"/>
     </extension_attributes>
 </config>

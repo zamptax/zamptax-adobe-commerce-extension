@@ -47,6 +47,7 @@ class CheckoutConfigProviderPlugin
      * @param DefaultConfigProvider $subject
      * @param array $result
      * @return array
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterGetConfig(DefaultConfigProvider $subject, array $result): array
     {

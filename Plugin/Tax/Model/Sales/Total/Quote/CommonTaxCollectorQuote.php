@@ -35,6 +35,7 @@ class CommonTaxCollectorQuote
      * @param QuoteDetailsInterface $quoteDetails
      * @param QuoteAddress $address
      * @return QuoteDetailsInterface
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterPopulateAddressData(
         CommonTaxCollector    $subject,

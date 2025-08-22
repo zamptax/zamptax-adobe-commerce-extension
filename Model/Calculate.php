@@ -147,7 +147,6 @@ class Calculate
     {
         unset(
             $toArray['transactedAt'],
-            $toArray['shippingHandling'],
             $toArray['total'],
             $toArray['shipToAddress']['line1'],
             $toArray['shipToAddress']['line2'],

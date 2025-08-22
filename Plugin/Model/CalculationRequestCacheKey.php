@@ -18,6 +18,7 @@ class CalculationRequestCacheKey
      * @param Calculation $subject
      * @param DataObject $request
      * @return array
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function beforeGetRate(
         Calculation $subject,

@@ -6,9 +6,9 @@
 
 namespace ATF\Zamp\Logger;
 
-use Monolog\Logger as MonoLogger;
+use Magento\Framework\Logger\Monolog;
 
-class Logger extends MonoLogger
+class Logger extends Monolog
 {
 
 }

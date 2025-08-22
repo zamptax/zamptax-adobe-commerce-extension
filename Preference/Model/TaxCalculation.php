@@ -13,7 +13,6 @@ use ATF\Zamp\Services\Quote as QuoteService;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Api\DataObjectHelper;
 use Magento\Framework\DataObject;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Tax\Api\Data\QuoteDetailsInterface;
@@ -27,8 +26,6 @@ use Magento\Tax\Model\Calculation\AbstractCalculator;
 use Magento\Tax\Model\Calculation\CalculatorFactory;
 use Magento\Tax\Model\Config;
 use Magento\Tax\Model\TaxDetails\TaxDetails;
-use Magento\Framework\App\CacheInterface;
-use Magento\Checkout\Model\Session as CheckoutSession;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -136,6 +133,7 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
      * @inheritdoc
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function calculateTax(
         QuoteDetailsInterface $quoteDetails,
@@ -183,14 +181,16 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
 
         if ($this->isZampCalculation()) {
             $isShipping = $this->checkIfShippingItems();
-            if (!$isShipping) {
-                $request = $this->buildDataSource($this->extractZampItems(), $quoteDetails);
-                $zampResponse = $this->zampCalculate->execute($request);
+            $extractedItems = $isShipping
+                ? $this->extractZampItemsFromShipping($quoteDetails)
+                : $this->extractZampItems();
 
-                if ($zampResponse && isset($zampResponse['taxDue'])) {
-                    $parsedZampResponse = $this->applyTaxToLineItems($zampResponse);
-                    $this->applyTaxInfoOnKeyedItems($parsedZampResponse);
-                }
+            $request = $this->buildDataSource($extractedItems, $quoteDetails);
+            $zampResponse = $this->zampCalculate->execute($request);
+
+            if ($zampResponse && isset($zampResponse['taxDue'])) {
+                $parsedZampResponse = $this->applyTaxToLineItems($zampResponse);
+                $this->applyTaxInfoOnKeyedItems($parsedZampResponse);
             }
         } else {
             $this->applyTaxInfoOnKeyedItems([], true);
@@ -376,10 +376,25 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
                 ->setProductTaxCode(null)
                 ->setZampTaxInfo(null);
         } else {
-            $productId = $extension->getProductId();
-            $zampTaxInfo = array_filter($zampResponse['lineItems'], static function ($lineItem) use ($productId) {
-                return $productId === $lineItem['id'];
-            });
+
+            if ($item->getType() === 'shipping') {
+                $taxInfo = array_filter($zampResponse['taxes'], static function ($lineItem) {
+                    return $lineItem['ancillaryType'] === 'SHIPPING_HANDLING';
+                });
+
+                $rateId = $this->zampCalculate->resolveRateId($zampResponse, 'SHIPPING_HANDLING');
+                $zampTaxInfo = [[
+                    'taxes' => $taxInfo,
+                    'rateId' => $rateId,
+                    'rateTitle' => $rateId
+                ]];
+            } else {
+                $productId = $extension->getProductId();
+                $zampTaxInfo = array_filter($zampResponse['lineItems'], static function ($lineItem) use ($productId) {
+                    return $productId === $lineItem['id'];
+                });
+            }
+
             if (count($zampTaxInfo) > 0) {
                 $extension->setZampTaxInfo($this->jsonSerializer->serialize(reset($zampTaxInfo)));
             }
@@ -438,6 +453,27 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
                 $items[] = $item;
             }
         }
+        return $items;
+    }
+
+    /**
+     * Extract Zamp Items
+     *
+     * @param QuoteDetailsInterface $quoteDetails
+     * @return array
+     */
+    private function extractZampItemsFromShipping(QuoteDetailsInterface $quoteDetails): array
+    {
+        $items = [];
+        foreach ($quoteDetails->getItems() as $quoteDetailsItem) {
+            if ($extensionAttributes = $quoteDetailsItem->getExtensionAttributes()) {
+                $items = $extensionAttributes->getZampItems();
+                if (!empty($items)) {
+                    return $items;
+                }
+            }
+        }
+
         return $items;
     }
 }

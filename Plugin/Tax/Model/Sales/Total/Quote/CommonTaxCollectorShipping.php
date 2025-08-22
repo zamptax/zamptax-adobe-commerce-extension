@@ -36,6 +36,7 @@ class CommonTaxCollectorShipping
      * @param ShippingAssignmentInterface $shippingAssignment
      * @param Total $total
      * @return QuoteDetailsItemInterface
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterGetShippingDataObject(
         CommonTaxCollector               $subject,
@@ -43,6 +44,6 @@ class CommonTaxCollectorShipping
         ShippingAssignmentInterface      $shippingAssignment,
         Total                            $total
     ): QuoteDetailsItemInterface {
-        return $this->shippingDetails->execute($result, $total);
+        return $this->shippingDetails->execute($result, $shippingAssignment, $total);
     }
 }
