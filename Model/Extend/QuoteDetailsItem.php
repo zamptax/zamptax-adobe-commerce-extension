@@ -37,6 +37,7 @@ class QuoteDetailsItem
      * @param Product $product
      * @param AbstractItem|null $item
      * @return QuoteDetailsItemInterface
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function execute(
         QuoteDetailsItemInterface $quoteDetailsItem,
@@ -57,6 +58,8 @@ class QuoteDetailsItem
                 && $product->getTypeId() !== BundleType::TYPE_CODE
                 && $item->getParentItem()) {
                 $productId = $item->getParentItem()->getProduct()->getId() . '-' .  $product->getId();
+            } else {
+                $productId = $item ? ($item->getId() . '-' . $productId) : $productId;
             }
 
             $extensionAttributes->setProductId($productId);
