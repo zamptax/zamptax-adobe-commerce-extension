@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "main"
+      - "renovate/**"
+  pull_request:
+    types: [opened, edited, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-title:
+    name: Check title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')
+    steps:
+      - uses: morrisoncole/pr-lint-action@51f3cfabaf5d46f94e54524214e45685f0401b2a # v1.7.1
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          title-regex: "^[A-Z].*$"
+          on-failed-regex-fail-action: true
+          on-failed-regex-create-review: false
+
+  check:
+    if: always()
+
+    name: Check
+    needs:
+      - check-title
+    # more jobs can be added here, and they will be included in the final
+    # decision of whether the automated checks passed or failed
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
