@@ -11,6 +11,8 @@ use Magento\Tax\Api\Data\QuoteDetailsInterface;
 
 class QuoteDetails
 {
+    private const QUOTE_CURRENCY_CODE = 'zamp_quote_currency_code';
+
     /**
      * Extend Interface Data
      *
@@ -30,6 +32,11 @@ class QuoteDetails
 
             $quoteDetails->setExtensionAttributes($extension);
         }
+
+        if (method_exists($quoteDetails, 'setData')) {
+            $quoteDetails->setData(self::QUOTE_CURRENCY_CODE, $quote->getQuoteCurrencyCode());
+        }
+
         return $quoteDetails;
     }
 }

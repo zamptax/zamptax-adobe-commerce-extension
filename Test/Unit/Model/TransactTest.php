@@ -90,9 +90,11 @@ class TransactTest extends TestCase
     {
         // Create mocks for Invoice and Order
         $orderMock = $this->getMockBuilder(OrderInterface::class)
+            ->onlyMethods(['getOrderCurrencyCode'])
             ->addMethods(['getZampCustomerTaxExemptCode', 'getFirstItem', 'getShippingAddress'])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
+        $orderMock->expects($this->once())->method('getOrderCurrencyCode')->willReturn('CAD');
 
         // Mock the item methods
         $invoiceItemMock = $this->getMockBuilder(InvoiceItemInterface::class)
@@ -122,7 +124,13 @@ class TransactTest extends TestCase
             ->willReturn($transactionObjMock);
         $transactionObjMock->expects($this->once())
             ->method('createPayload')
-            ->with($this->isInstanceOf(DataObject::class), 'invoice')
+            ->with(
+                $this->callback(function (DataObject $request): bool {
+                    $invoice = $request->getData('zamp_invoice');
+                    return $invoice instanceof DataObject && $invoice->getData('currency_code') === 'CAD';
+                }),
+                'invoice'
+            )
             ->willReturn($transactionObjMock);
         $transactionObjMock->expects($this->once())
             ->method('toArray')
@@ -150,10 +158,12 @@ class TransactTest extends TestCase
     public function testExecuteThrowsException()
     {
         $orderMock = $this->getMockBuilder(OrderInterface::class)
+            ->onlyMethods(['getOrderCurrencyCode'])
             ->addMethods(['getZampCustomerTaxExemptCode', 'getShippingAddress'])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
         $orderMock->expects($this->once())->method('getZampCustomerTaxExemptCode')->willReturn('R_TPP');
+        $orderMock->expects($this->once())->method('getOrderCurrencyCode')->willReturn('CAD');
 
         $invoiceMock = $this->getMockBuilder(InvoiceInterface::class)
             ->addMethods(['getId', 'getAllItems', 'getOrder'])
@@ -178,7 +188,13 @@ class TransactTest extends TestCase
             ->willReturn($transactionObjMock);
         $transactionObjMock->expects($this->once())
             ->method('createPayload')
-            ->with($this->isInstanceOf(DataObject::class), 'invoice')
+            ->with(
+                $this->callback(function (DataObject $request): bool {
+                    $invoice = $request->getData('zamp_invoice');
+                    return $invoice instanceof DataObject && $invoice->getData('currency_code') === 'CAD';
+                }),
+                'invoice'
+            )
             ->willThrowException(new LocalizedException(__('Error creating payload')));
 
         // Expect the exception when the execute method is called

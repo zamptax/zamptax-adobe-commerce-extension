@@ -6,62 +6,31 @@
 
 namespace ATF\Zamp\Test\Unit\Observer;
 
+use ATF\Zamp\Model\Service\TaxExemptCodeResolver;
 use ATF\Zamp\Observer\SaveCustomerTaxExemptCode;
-use Magento\Customer\Model\Session;
+use Magento\Framework\Event;
 use Magento\Framework\Event\Observer;
 use Magento\Sales\Model\Order;
-use Magento\Framework\Event;
-use Magento\Customer\Api\Data\CustomerInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class SaveCustomerTaxExemptCodeTest extends TestCase
 {
-    /**
-     * @var Session
-     */
-    private $customerSessionMock;
+    private TaxExemptCodeResolver|MockObject $taxExemptCodeResolver;
 
-    /**
-     * @var CustomerInterface
-     */
-    private $customerMock;
+    private SaveCustomerTaxExemptCode $observerClass;
 
-    /**
-     * @var Order
-     */
-    private $orderMock;
+    private Order|MockObject $orderMock;
 
-    /**
-     * @var SaveCustomerTaxExemptCode
-     */
-    private $observerClass;
+    private Observer $observerMock;
 
-    /**
-     * @var Observer
-     */
-    private $observerMock;
-
-    /**
-     * @var Event
-     */
-    private $eventMock;
+    private Event|MockObject $eventMock;
 
     protected function setUp(): void
     {
-        $this->customerSessionMock = $this->createMock(Session::class);
-
-        $this->customerMock = $this->getMockForAbstractClass(
-            CustomerInterface::class,
-            [],
-            '',
-            false,
-            true,
-            true,
-            ['getTaxExemptCode']
-        );
-
+        $this->taxExemptCodeResolver = $this->createMock(TaxExemptCodeResolver::class);
         $this->orderMock = $this->getMockBuilder(Order::class)
-            ->onlyMethods(['getData'])
+            ->onlyMethods(['getData', 'getCustomerId'])
             ->addMethods(['setZampCustomerTaxExemptCode'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -73,113 +42,63 @@ class SaveCustomerTaxExemptCodeTest extends TestCase
 
         $this->observerMock = $this->createMock(Observer::class);
 
-        $this->observerClass = new SaveCustomerTaxExemptCode($this->customerSessionMock);
+        $this->observerClass = new SaveCustomerTaxExemptCode($this->taxExemptCodeResolver);
     }
 
-    public function testExecuteSetsTaxExemptCodeWhenLoggedIn()
+    public function testExecuteSetsResolvedCodeForRegisteredCustomer(): void
     {
-        $taxExemptCode = 'EXEMPT123';
+        $this->orderMock->method('getCustomerId')->willReturn('5');
+        $this->taxExemptCodeResolver->expects($this->once())
+            ->method('execute')
+            ->with(5)
+            ->willReturn('GOV_EDU');
 
-        // Mock the customer session and customer with a tax exempt code
-        $this->customerMock
-            ->expects($this->exactly(2))
-            ->method('getTaxExemptCode')
-            ->willReturn($taxExemptCode);
-
-        $this->customerSessionMock
-            ->expects($this->once())
-            ->method('isLoggedIn')
-            ->willReturn(true);
-
-        $this->customerSessionMock
-            ->expects($this->exactly(2))
-            ->method('getCustomer')
-            ->willReturn($this->customerMock);
-
-        // Mock the order object from the observer
-        $this->orderMock
-            ->expects($this->once())
+        $this->orderMock->expects($this->once())
             ->method('setZampCustomerTaxExemptCode')
-            ->with($taxExemptCode);
+            ->with('GOV_EDU');
 
-        // Mock the observer and event
-        $this->eventMock
-            ->expects($this->once())
-            ->method('getOrder')
-            ->willReturn($this->orderMock);
+        $this->orderMock->expects($this->never())->method('getData');
 
-        $this->observerMock
-            ->expects($this->once())
-            ->method('getEvent')
-            ->willReturn($this->eventMock);
+        $this->eventMock->method('getOrder')->willReturn($this->orderMock);
+        $this->observerMock->method('getEvent')->willReturn($this->eventMock);
 
-        // Execute the observer
         $this->observerClass->execute($this->observerMock);
     }
 
-    public function testExecuteDoesNotSetTaxExemptCodeWhenNotLoggedIn()
+    public function testExecuteFallsBackToOrderCustomerTaxExemptCodeWhenResolverReturnsNull(): void
     {
-        // Customer is not logged in
-        $this->customerSessionMock
-            ->expects($this->once())
-            ->method('isLoggedIn')
-            ->willReturn(false);
-
-        // Mock the observer and event
-        $this->eventMock
-            ->expects($this->once())
-            ->method('getOrder')
-            ->willReturn($this->orderMock);
-
-        // Mock the observer
-        $this->observerMock
-            ->expects($this->once())
-            ->method('getEvent')
-            ->willReturn($this->eventMock);
-
-        // Execute the observer
-        $this->observerClass->execute($this->observerMock);
-    }
-
-    public function testExecuteDoesNotSetTaxExemptCodeWhenCustomerHasNoExemptCode()
-    {
-        // Mock the customer session, logged in but no tax exempt code
-        $this->customerMock
-            ->expects($this->once())
-            ->method('getTaxExemptCode')
+        $this->orderMock->method('getCustomerId')->willReturn(null);
+        $this->taxExemptCodeResolver->expects($this->once())
+            ->method('execute')
+            ->with(null)
             ->willReturn(null);
 
-        $this->customerSessionMock
-            ->expects($this->once())
-            ->method('isLoggedIn')
-            ->willReturn(true);
-
-        $this->customerSessionMock
-            ->expects($this->once())
-            ->method('getCustomer')
-            ->willReturn($this->customerMock);
-
-        // Mock the order object from the observer
-        $taxExemptCode = 'EXEMPT123';
-        $this->orderMock
-            ->expects($this->once())
+        $this->orderMock->expects($this->once())
             ->method('getData')
             ->with('customer_tax_exempt_code')
-            ->willReturn($taxExemptCode);
+            ->willReturn('FALLBACK');
 
-        // Mock the observer and event
-        $this->eventMock
-            ->expects($this->once())
-            ->method('getOrder')
-            ->willReturn($this->orderMock);
+        $this->orderMock->expects($this->once())
+            ->method('setZampCustomerTaxExemptCode')
+            ->with('FALLBACK');
 
-        // Mock the observer
-        $this->observerMock
-            ->expects($this->once())
-            ->method('getEvent')
-            ->willReturn($this->eventMock);
+        $this->eventMock->method('getOrder')->willReturn($this->orderMock);
+        $this->observerMock->method('getEvent')->willReturn($this->eventMock);
 
-        // Execute the observer
+        $this->observerClass->execute($this->observerMock);
+    }
+
+    public function testExecuteDoesNotSetWhenNoCodeAvailable(): void
+    {
+        $this->orderMock->method('getCustomerId')->willReturn(null);
+        $this->taxExemptCodeResolver->method('execute')->willReturn(null);
+        $this->orderMock->method('getData')->willReturn(null);
+
+        $this->orderMock->expects($this->never())->method('setZampCustomerTaxExemptCode');
+
+        $this->eventMock->method('getOrder')->willReturn($this->orderMock);
+        $this->observerMock->method('getEvent')->willReturn($this->eventMock);
+
         $this->observerClass->execute($this->observerMock);
     }
 }

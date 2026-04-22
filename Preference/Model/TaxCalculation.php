@@ -8,9 +8,9 @@ namespace ATF\Zamp\Preference\Model;
 
 use ATF\Zamp\Model\Calculate;
 use ATF\Zamp\Model\Configurations;
+use ATF\Zamp\Model\Service\TaxExemptCodeResolver;
 use ATF\Zamp\Preference\Model\Calculation\CalculatorFactory as ZampCalculatorFactory;
 use ATF\Zamp\Services\Quote as QuoteService;
-use Magento\Customer\Model\Session;
 use Magento\Framework\Api\DataObjectHelper;
 use Magento\Framework\DataObject;
 use Magento\Framework\Serialize\Serializer\Json;
@@ -29,10 +29,10 @@ use Magento\Tax\Model\TaxDetails\TaxDetails;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
 class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
 {
+    private const QUOTE_CURRENCY_CODE = 'zamp_quote_currency_code';
 
     private const SESSION_ZAMP_PAYLOAD = 'zamp_payload';
 
@@ -56,11 +56,6 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
     private $zampConfigurations;
 
     /**
-     * @var Session
-     */
-    private $customerSession;
-
-    /**
      * @var Calculate
      */
     private Calculate $zampCalculate;
@@ -74,6 +69,11 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
      * @var QuoteService
      */
     private QuoteService $quoteService;
+
+    /**
+     * @var TaxExemptCodeResolver
+     */
+    private TaxExemptCodeResolver $taxExemptCodeResolver;
 
     /**
      * @var bool
@@ -90,10 +90,10 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
      * @param TaxClassManagementInterface $taxClassManagement
      * @param DataObjectHelper $dataObjectHelper
      * @param Configurations $zampConfigurations
-     * @param Session $customerSession
      * @param Calculate $zampCalculate
      * @param Json $jsonSerializer
      * @param QuoteService $quoteService
+     * @param TaxExemptCodeResolver $taxExemptCodeResolver
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -106,10 +106,10 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
         TaxClassManagementInterface    $taxClassManagement,
         DataObjectHelper               $dataObjectHelper,
         Configurations                 $zampConfigurations,
-        Session                        $customerSession,
         Calculate                      $zampCalculate,
         Json                           $jsonSerializer,
         QuoteService                   $quoteService,
+        TaxExemptCodeResolver          $taxExemptCodeResolver,
     ) {
         parent::__construct(
             $calculation,
@@ -123,10 +123,10 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
         );
 
         $this->zampConfigurations = $zampConfigurations;
-        $this->customerSession = $customerSession;
         $this->zampCalculate = $zampCalculate;
         $this->jsonSerializer = $jsonSerializer;
         $this->quoteService = $quoteService;
+        $this->taxExemptCodeResolver = $taxExemptCodeResolver;
     }
 
     /**
@@ -140,12 +140,17 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
         $storeId = null,
         $round = true
     ) {
+        $shippingAddress = $quoteDetails->getShippingAddress();
         $doZampCalc = $this->zampConfigurations->isModuleEnabled()
             && $this->zampConfigurations->isCalculationEnabled()
-            && is_object($quoteDetails->getShippingAddress())
-            && $this->zampConfigurations->isTaxableState($quoteDetails->getShippingAddress());
+            && is_object($shippingAddress)
+            && (string)$shippingAddress->getCountryId() !== '';
 
-        $this->setZampCalculation($doZampCalc);
+        if (!$doZampCalc) {
+            return parent::calculateTax($quoteDetails, $storeId, $round);
+        }
+
+        $this->setZampCalculation(true);
 
         if ($storeId === null) {
             $storeId = $this->storeManager->getStore()->getStoreId();
@@ -171,29 +176,25 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
         $this->computeRelationships($items);
 
         $calculator = $this->calculatorFactory->create(
-            $this->isZampCalculation() ? ZampCalculatorFactory::CALC_ZAMP : $this->config->getAlgorithm($storeId),
+            ZampCalculatorFactory::CALC_ZAMP,
             $storeId,
             $quoteDetails->getBillingAddress(),
-            $quoteDetails->getShippingAddress(),
+            $shippingAddress,
             $this->taxClassManagement->getTaxClassId($quoteDetails->getCustomerTaxClassKey(), 'customer'),
             $quoteDetails->getCustomerId()
         );
 
-        if ($this->isZampCalculation()) {
-            $isShipping = $this->checkIfShippingItems();
-            $extractedItems = $isShipping
-                ? $this->extractZampItemsFromShipping($quoteDetails)
-                : $this->extractZampItems();
+        $isShipping = $this->checkIfShippingItems();
+        $extractedItems = $isShipping
+            ? $this->extractZampItemsFromShipping($quoteDetails)
+            : $this->extractZampItems();
 
-            $request = $this->buildDataSource($extractedItems, $quoteDetails);
-            $zampResponse = $this->zampCalculate->execute($request);
+        $request = $this->buildDataSource($extractedItems, $quoteDetails);
+        $zampResponse = $this->zampCalculate->execute($request);
 
-            if ($zampResponse && isset($zampResponse['taxDue'])) {
-                $parsedZampResponse = $this->applyTaxToLineItems($zampResponse);
-                $this->applyTaxInfoOnKeyedItems($parsedZampResponse);
-            }
-        } else {
-            $this->applyTaxInfoOnKeyedItems([], true);
+        if ($zampResponse && isset($zampResponse['taxDue'])) {
+            $parsedZampResponse = $this->applyTaxToLineItems($zampResponse);
+            $this->applyTaxInfoOnKeyedItems($parsedZampResponse);
         }
 
         $processedItems = [];
@@ -291,12 +292,9 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
         $build = [];
         $quoteDetailsExtension = $quoteDetails->getExtensionAttributes();
 
-        if ($this->customerSession->isLoggedIn() && !empty($this->customerSession->getCustomer()->getTaxExemptCode())) {
-            $customerTaxExemptCode = $this->customerSession->getCustomer()->getTaxExemptCode();
-        } else {
-            $customer = $this->customerSession->setCustomerId($quoteDetails->getCustomerId())->getCustomer();
-            $customerTaxExemptCode = $customer->getTaxExemptCode() ?: null;
-        }
+        $customerId = $quoteDetails->getCustomerId();
+        $resolvedCustomerId = $customerId && (int)$customerId > 0 ? (int)$customerId : null;
+        $customerTaxExemptCode = $this->taxExemptCodeResolver->execute($resolvedCustomerId);
 
         if ($quoteDetailsExtension) {
             $this->quoteService->updatedCartQuote($quoteDetailsExtension->getZampQuoteId());
@@ -306,6 +304,7 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
                     'id' => $quoteDetailsExtension->getZampQuoteId(),
                     'shipping_amount' => $quoteDetailsExtension->getZampQuoteShippingAmount(),
                     'customer_tax_exempt_code' => $customerTaxExemptCode,
+                    'currency_code' => $this->resolveCurrencyCode($quoteDetails),
                     'updated_at' => $quoteDetailsExtension->getZampQuoteUpdatedAt(),
                 ]),
                 'zamp_items' => $items,
@@ -313,6 +312,32 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
             ];
         }
         return new DataObject($build);
+    }
+
+    /**
+     * Resolves the current quote/order currency without relying on generated extension methods.
+     */
+    private function resolveCurrencyCode(QuoteDetailsInterface $quoteDetails): ?string
+    {
+        if (method_exists($quoteDetails, 'getData')) {
+            $currencyCode = $quoteDetails->getData(self::QUOTE_CURRENCY_CODE);
+            if (is_string($currencyCode) && $currencyCode !== '') {
+                return $currencyCode;
+            }
+        }
+
+        $shippingAddress = $quoteDetails->getShippingAddress();
+        if ($shippingAddress && method_exists($shippingAddress, 'getQuote')) {
+            $quote = $shippingAddress->getQuote();
+            if ($quote && method_exists($quote, 'getQuoteCurrencyCode')) {
+                $currencyCode = $quote->getQuoteCurrencyCode();
+                if (is_string($currencyCode) && $currencyCode !== '') {
+                    return $currencyCode;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -420,10 +445,14 @@ class TaxCalculation extends \Magento\Tax\Model\TaxCalculation
      */
     protected function getTotalQuantity(QuoteDetailsItemInterface $item)
     {
-        if ($item->getParentCode()) {
-            $parentQuantity = $this->keyedItems[$item->getParentCode()]->getQuantity();
-            return $parentQuantity * $item->getQuantity();
+        $parentCode = (string)$item->getParentCode();
+        if ($parentCode !== '') {
+            $parentItem = is_array($this->keyedItems) ? ($this->keyedItems[$parentCode] ?? null) : null;
+            if ($parentItem) {
+                return $parentItem->getQuantity() * $item->getQuantity();
+            }
         }
+
         return $item->getQuantity();
     }
 

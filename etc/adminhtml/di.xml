@@ -66,4 +66,10 @@
         <plugin name="atf_zamp_add_re_sync_in_zamp_button_to_sales_credit_memo_view"
                 type="ATF\Zamp\Plugin\Block\Adminhtml\Order\Creditmemo\AddReSyncInZampButtonToSalesCreditMemoView" />
     </type>
+
+    <type name="Magento\Backend\Block\Widget\Form">
+        <plugin name="atf_zamp_customer_group_form_zamp_tax_exempt"
+                type="ATF\Zamp\Plugin\Customer\Block\Adminhtml\Group\GroupFormAddZampField"/>
+    </type>
+
 </config>

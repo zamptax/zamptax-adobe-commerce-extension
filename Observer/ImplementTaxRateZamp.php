@@ -70,21 +70,57 @@ class ImplementTaxRateZamp implements ObserverInterface
                 $sender->setRateTitle($taxInfo['rateTitle']);
                 $rateValue = 0;
                 if ($item->getType() === Shipping::ITEM_CODE_SHIPPING) {
-                    foreach ($taxInfo['taxes'] as $tax) {
-                        if (isset($tax['taxRate']) && $tax['ancillaryType'] === 'SHIPPING_HANDLING') {
-                            $rateValue += $tax['taxRate'] * 100;
-                        }
-                    }
+                    $rateValue = $this->collectDistinctRateValue($taxInfo['taxes'], 'SHIPPING_HANDLING');
                 } else {
-                    foreach ($taxInfo['taxes'] as $tax) {
-                        if (isset($tax['taxRate']) && $tax['ancillaryType'] !== 'SHIPPING_HANDLING') {
-                            $rateValue += $tax['taxRate'] * 100;
-                        }
-                    }
+                    $rateValue = $this->collectDistinctRateValue($taxInfo['taxes'], null);
                 }
 
                 $sender->setRateValue($rateValue);
             }
         }
+    }
+
+    /**
+     * Collects unique tax rates per jurisdiction so distributed shipping taxes are not double-counted.
+     *
+     * @param array $taxes
+     * @param string|null $ancillaryType
+     * @return float
+     */
+    private function collectDistinctRateValue(array $taxes, ?string $ancillaryType): float
+    {
+        $rateValue = 0.0;
+        $appliedRates = [];
+
+        foreach ($taxes as $tax) {
+            $taxAncillaryType = $tax['ancillaryType'] ?? null;
+            if (!isset($tax['taxRate'])) {
+                continue;
+            }
+
+            if ($ancillaryType === null && $taxAncillaryType === 'SHIPPING_HANDLING') {
+                continue;
+            }
+
+            if ($ancillaryType !== null && $taxAncillaryType !== $ancillaryType) {
+                continue;
+            }
+
+            $rateKey = implode('|', [
+                (string)($tax['jurisdictionCode'] ?? ''),
+                (string)($tax['compositeCode'] ?? ''),
+                (string)$taxAncillaryType,
+                (string)$tax['taxRate'],
+            ]);
+
+            if (isset($appliedRates[$rateKey])) {
+                continue;
+            }
+
+            $appliedRates[$rateKey] = true;
+            $rateValue += (float)$tax['taxRate'] * 100;
+        }
+
+        return $rateValue;
     }
 }

@@ -54,6 +54,11 @@
                 default="0" comment="Is Zamp Tax Calculated"/>
     </table>
 
+    <table name="customer_group">
+        <column name="zamp_tax_exempt_code" xsi:type="varchar" nullable="true" length="255"
+                comment="Zamp Tax Exempt Code (used when customer profile code is empty)"/>
+    </table>
+
     <table name="queue_zamp_historical_transaction_sync"
            comment="Zamp queue table">
         <column xsi:type="int"

@@ -13,6 +13,7 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Quote\Api\Data\ShippingAssignmentInterface;
 use Magento\Quote\Model\Quote\Address\Total;
+use Magento\Tax\Api\Data\QuoteDetailsItemExtensionFactory;
 use Magento\Tax\Api\Data\QuoteDetailsItemInterface;
 
 /**
@@ -26,12 +27,20 @@ class ShippingDetails
     private Configurations $configurations;
 
     /**
+     * @var QuoteDetailsItemExtensionFactory
+     */
+    private QuoteDetailsItemExtensionFactory $quoteDetailsItemExtensionFactory;
+
+    /**
      * @param Configurations $configurations
+     * @param QuoteDetailsItemExtensionFactory $quoteDetailsItemExtensionFactory
      */
     public function __construct(
-        Configurations $configurations
+        Configurations $configurations,
+        QuoteDetailsItemExtensionFactory $quoteDetailsItemExtensionFactory
     ) {
         $this->configurations = $configurations;
+        $this->quoteDetailsItemExtensionFactory = $quoteDetailsItemExtensionFactory;
     }
 
     /**
@@ -52,10 +61,6 @@ class ShippingDetails
             && $this->configurations->isCalculationEnabled();
 
         if (!$doZampCalc) {
-            return $quoteDetailsItem;
-        }
-
-        if (!$quoteDetailsItem->getExtensionAttributes()) {
             return $quoteDetailsItem;
         }
 
@@ -95,14 +100,16 @@ class ShippingDetails
             }
         }
 
-        $extensionAttributes = $quoteDetailsItem->getExtensionAttributes();
-        if ($total->getShippingTaxCalculationAmount() !== null) {
-            $extensionAttributes->setProductTaxCode(
-                $this->configurations->getDefaultProductTaxProviderTaxCode()
-            );
-            $extensionAttributes->setZampItems($zampItems);
-            $quoteDetailsItem->setExtensionAttributes($extensionAttributes);
-        }
+        $extensionAttributes = $quoteDetailsItem->getExtensionAttributes()
+            ?: $this->quoteDetailsItemExtensionFactory->create();
+
+        // Always attach the Zamp shipping metadata so Magento does not
+        // fall back to a native shipping tax rate when Zamp says shipping is not taxable.
+        $extensionAttributes->setProductTaxCode(
+            $this->configurations->getDefaultProductTaxProviderTaxCode()
+        );
+        $extensionAttributes->setZampItems($zampItems);
+        $quoteDetailsItem->setExtensionAttributes($extensionAttributes);
 
         return $quoteDetailsItem;
     }
