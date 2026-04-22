@@ -50,24 +50,10 @@
                     </depends>
                 </field>
 
-                <field id="taxable_states"
-                       translate="label"
-                       type="multiselect"
-                       sortOrder="40"
-                       showInDefault="1"
-                       showInWebsite="1">
-                    <label>Choose your taxable states</label>
-                    <source_model>ATF\Zamp\Model\Config\Region\RegionInformationProvider</source_model>
-                    <can_be_empty>1</can_be_empty>
-                    <depends>
-                        <field id="tax/zamp_configuration/active">1</field>
-                    </depends>
-                </field>
-
                 <field id="allow_tax_calculation"
                        translate="label"
                        type="select"
-                       sortOrder="50"
+                       sortOrder="40"
                        showInDefault="1"
                        showInWebsite="1"
                        canRestore="1">
@@ -81,7 +67,7 @@
                 <field id="send_transactions"
                        translate="label"
                        type="select"
-                       sortOrder="60"
+                       sortOrder="50"
                        showInDefault="1"
                        showInWebsite="1"
                        canRestore="1">
@@ -95,7 +81,7 @@
                 <field id="default_product_tax_provider_tax_code"
                        translate="label"
                        type="text"
-                       sortOrder="70"
+                       sortOrder="60"
                        showInDefault="1"
                        showInWebsite="1"
                        canRestore="1">
@@ -109,7 +95,7 @@
                 <field id="enable_logging"
                        translate="label"
                        type="select"
-                       sortOrder="80"
+                       sortOrder="70"
                        showInDefault="1"
                        showInWebsite="1"
                        canRestore="1">
@@ -123,7 +109,7 @@
                 <field id="log_lifetime"
                        translate="label"
                        type="text"
-                       sortOrder="90"
+                       sortOrder="80"
                        showInDefault="1"
                        showInWebsite="0"
                        canRestore="1">

@@ -1,4 +1,9 @@
 {
+    "customer_group": {
+        "column": {
+            "zamp_tax_exempt_code": true
+        }
+    },
     "sales_order": {
         "column": {
             "zamp_customer_tax_exempt_code": true,

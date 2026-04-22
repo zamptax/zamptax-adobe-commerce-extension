@@ -15,6 +15,7 @@ use ATF\Zamp\Model\ResourceModel\HistoricalTransactionSyncQueue\CollectionFactor
 use ATF\Zamp\Model\Transaction\PayloadItems;
 use ATF\Zamp\Model\TransactionObject;
 use ATF\Zamp\Model\TransactionObjectFactory;
+use Magento\Framework\DataObject;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
@@ -198,6 +199,9 @@ class QueueHandlerTest extends TestCase
         $this->invoice->expects($this->once())
             ->method('getTaxAmount')
             ->willReturn(3);
+        $this->order->expects($this->once())
+            ->method('getOrderCurrencyCode')
+            ->willReturn('CAD');
 
         $this->transactionObjectFactory->expects($this->once())
             ->method('create')
@@ -205,7 +209,12 @@ class QueueHandlerTest extends TestCase
 
         $this->transactionObject->expects($this->once())
             ->method('createPayload')
-            ->willReturnCallback(function () {
+            ->willReturnCallback(function (DataObject $request, string $type, bool $isLocal = false) {
+                $invoice = $request->getData('zamp_invoice');
+                $this->assertInstanceOf(DataObject::class, $invoice);
+                $this->assertSame('CAD', $invoice->getData('currency_code'));
+                $this->assertSame('invoice', $type);
+                $this->assertFalse($isLocal);
                 return $this->transactionObject;
             });
 
@@ -275,6 +284,9 @@ class QueueHandlerTest extends TestCase
         $this->creditmemo->expects($this->once())
             ->method('getTaxAmount')
             ->willReturn(3);
+        $this->order->expects($this->once())
+            ->method('getOrderCurrencyCode')
+            ->willReturn('CAD');
 
         $this->transactionObjectFactory->expects($this->once())
             ->method('create')
@@ -282,7 +294,12 @@ class QueueHandlerTest extends TestCase
 
         $this->transactionObject->expects($this->once())
             ->method('createPayload')
-            ->willReturnCallback(function () {
+            ->willReturnCallback(function (DataObject $request, string $type, bool $isLocal = false) {
+                $refund = $request->getData('zamp_refund');
+                $this->assertInstanceOf(DataObject::class, $refund);
+                $this->assertSame('CAD', $refund->getData('currency_code'));
+                $this->assertSame('refund', $type);
+                $this->assertFalse($isLocal);
                 return $this->transactionObject;
             });
 

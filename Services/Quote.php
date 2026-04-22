@@ -32,6 +32,11 @@ class Quote
     protected $connection;
 
     /**
+     * @var ResourceConnection
+     */
+    private ResourceConnection $resource;
+
+    /**
      * @param Configurations $zampConfigurations
      * @param ResourceConnection $resource
      * @param LoggerInterface $logger
@@ -42,6 +47,7 @@ class Quote
         LoggerInterface $logger
     ) {
         $this->zampConfigurations = $zampConfigurations;
+        $this->resource = $resource;
         $this->connection = $resource->getConnection();
         $this->logger = $logger;
     }
@@ -60,7 +66,7 @@ class Quote
         if ($doZampCalc) {
             try {
                 $this->connection->update(
-                    $this->connection->getTableName('quote'),
+                    $this->resource->getTableName('quote'),
                     [self::IS_ZAMP_CALCULATED => 1],
                     ['entity_id = ?' => (int) $cartId]
                 );
@@ -86,7 +92,7 @@ class Quote
             $select = $this->connection
                 ->select()
                 ->from(
-                    $this->connection->getTableName('quote'),
+                    $this->resource->getTableName('quote'),
                     [self::IS_ZAMP_CALCULATED]
                 )
                 ->where('entity_id = ?', (int) $quoteId);
@@ -110,7 +116,7 @@ class Quote
         $select = $this->connection
             ->select()
             ->from(
-                $this->connection->getTableName('quote_id_mask'),
+                $this->resource->getTableName('quote_id_mask'),
                 ['quote_id']
             )
             ->where('masked_id = ?', $cartId);

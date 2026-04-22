@@ -97,4 +97,11 @@
         <plugin name="atf_zamp_plugin_model_company_dataprovider_meta"
                 type="ATF\Zamp\Plugin\Model\Company\DataProvider\MetaChanges"/>
     </type>
+
+    <type name="Magento\Customer\Api\GroupRepositoryInterface">
+        <plugin name="atf_zamp_customer_group_zamp_after_save"
+                type="ATF\Zamp\Plugin\Customer\Api\GroupRepository\AfterSavePersistZampTaxExempt"
+                sortOrder="500"/>
+    </type>
+
 </config>

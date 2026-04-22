@@ -9,7 +9,6 @@ use ATF\Zamp\Block\Adminhtml\HistoricalTransaction\Queue;
 use ATF\Zamp\Helper\Queue as QueueHelper;
 use ATF\Zamp\Model\ResourceModel\HistoricalTransactionSyncQueue\Collection;
 use ATF\Zamp\Model\ResourceModel\HistoricalTransactionSyncQueue\CollectionFactory;
-use Magento\Backend\Block\Template\Context;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -32,13 +31,18 @@ class QueueTest extends TestCase
 
     protected function setUp(): void
     {
-        $contextMock = $this->createMock(Context::class);
         $this->queueHelperMock = $this->createMock(QueueHelper::class);
         $this->collectionFactoryMock = $this->createPartialMock(
             CollectionFactory::class,
             ['create']
         );
-        $this->block = new Queue($contextMock, $this->queueHelperMock, $this->collectionFactoryMock);
+        $this->block = $this->getMockBuilder(Queue::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods([])
+            ->getMock();
+
+        $this->setProperty($this->block, 'queueHelper', $this->queueHelperMock);
+        $this->setProperty($this->block, 'collectionFactory', $this->collectionFactoryMock);
     }
 
     /**
@@ -59,5 +63,11 @@ class QueueTest extends TestCase
             ->willReturn(10);
 
         $this->assertEquals(10, $this->block->getQueueTotal());
+    }
+
+    private function setProperty(object $object, string $property, mixed $value): void
+    {
+        $reflection = new \ReflectionProperty($object, $property);
+        $reflection->setValue($object, $value);
     }
 }

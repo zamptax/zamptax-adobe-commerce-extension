@@ -81,11 +81,17 @@ class QuoteTest extends TestCase
             ->method('isCalculationEnabled')
             ->willReturn(true);
 
+        $this->resourceConnection
+            ->expects($this->once())
+            ->method('getTableName')
+            ->with('quote')
+            ->willReturn('quote');
+
         $this->connection
             ->expects($this->once())
             ->method('update')
             ->with(
-                $this->connection->getTableName('quote'),
+                'quote',
                 [Quote::IS_ZAMP_CALCULATED => 1],
                 ['entity_id = ?' => $cartId]
             );
@@ -136,19 +142,29 @@ class QuoteTest extends TestCase
             ->method('isCalculationEnabled')
             ->willReturn(true);
 
+        $this->resourceConnection
+            ->expects($this->once())
+            ->method('getTableName')
+            ->with('quote')
+            ->willReturn('quote');
+
         $this->connection
             ->expects($this->once())
             ->method('update')
             ->will($this->throwException(new \Exception('DB update error')));
 
+        $logMessages = [];
         $this->logger
             ->expects($this->exactly(2))
             ->method('error')
-            ->withConsecutive(
-                [$this->stringContains('ATF\Zamp\Services\Quote::updatedCartQuote')],
-                [$this->equalTo('DB update error')]
-            );
+            ->willReturnCallback(function ($message) use (&$logMessages): void {
+                $logMessages[] = $message;
+            });
 
         $this->quoteService->updatedCartQuote($cartId);
+
+        $this->assertCount(2, $logMessages);
+        $this->assertStringContainsString('ATF\Zamp\Services\Quote::updatedCartQuote', (string)$logMessages[0]);
+        $this->assertSame('DB update error', $logMessages[1]);
     }
 }

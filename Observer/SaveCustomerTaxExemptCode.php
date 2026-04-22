@@ -6,44 +6,43 @@
 
 namespace ATF\Zamp\Observer;
 
-use Magento\Customer\Model\Session;
+use ATF\Zamp\Model\Service\TaxExemptCodeResolver;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order;
 
-/**
- * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
- */
 class SaveCustomerTaxExemptCode implements ObserverInterface
 {
     /**
-     * @var Session
-     */
-    protected $customerSession;
-
-    /**
-     * @param Session $customerSession
+     * @param TaxExemptCodeResolver $taxExemptCodeResolver
      */
     public function __construct(
-        Session $customerSession
+        private readonly TaxExemptCodeResolver $taxExemptCodeResolver
     ) {
-        $this->customerSession = $customerSession;
     }
 
     /**
-     * Set sales_order zamp_customer_tax_exempt_code column value
+     * Set sales_order zamp_customer_tax_exempt_code to the effective resolver value (profile or group).
      *
      * @param Observer $observer
      * @return void
      */
-    public function execute(Observer $observer)
+    public function execute(Observer $observer): void
     {
         /* @var Order $order */
         $order = $observer->getEvent()->getOrder();
+        if (!$order instanceof Order) {
+            return;
+        }
 
-        if ($this->customerSession->isLoggedIn() && !empty($this->customerSession->getCustomer()->getTaxExemptCode())) {
-            $order->setZampCustomerTaxExemptCode($this->customerSession->getCustomer()->getTaxExemptCode());
-        } elseif ($orderCustomerTaxExemptCode = $order->getData('customer_tax_exempt_code')) {
+        $customerId = $order->getCustomerId() ? (int)$order->getCustomerId() : null;
+        $code = $this->taxExemptCodeResolver->execute($customerId);
+        if ($code !== null) {
+            $order->setZampCustomerTaxExemptCode($code);
+            return;
+        }
+
+        if ($orderCustomerTaxExemptCode = $order->getData('customer_tax_exempt_code')) {
             $order->setZampCustomerTaxExemptCode($orderCustomerTaxExemptCode);
         }
     }

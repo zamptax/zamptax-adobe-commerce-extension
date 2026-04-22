@@ -10,7 +10,6 @@ use ATF\Zamp\Block\Adminhtml\TransactionLog\View;
 use ATF\Zamp\Model\ResourceModel\TransactionLog as TransactionLogResource;
 use ATF\Zamp\Model\TransactionLog;
 use ATF\Zamp\Model\TransactionLogFactory;
-use Magento\Backend\Block\Template\Context;
 use Magento\Framework\App\RequestInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -21,11 +20,6 @@ class ViewTest extends TestCase
      * @var View
      */
     protected $block;
-
-    /**
-     * @var Context|MockObject
-     */
-    protected $context;
 
     /**
      * @var TransactionLogFactory|MockObject
@@ -49,8 +43,6 @@ class ViewTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->context = $this->createMock(Context::class);
-
         $this->transactionLogResource = $this->createMock(TransactionLogResource::class);
 
         $this->transactionLogFactory = $this->createMock(TransactionLogFactory::class);
@@ -58,13 +50,13 @@ class ViewTest extends TestCase
         $this->transactionLog = $this->createMock(TransactionLog::class);
 
         $this->request = $this->getMockForAbstractClass(RequestInterface::class);
+        $this->block = $this->getMockBuilder(View::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getRequest'])
+            ->getMock();
 
-        $this->context
-            ->expects($this->once())
-            ->method('getRequest')
-            ->willReturn($this->request);
-
-        $this->block = new View($this->context, $this->transactionLogResource, $this->transactionLogFactory);
+        $this->setProperty($this->block, 'transactionLogResource', $this->transactionLogResource);
+        $this->setProperty($this->block, 'transactionLogFactory', $this->transactionLogFactory);
     }
 
     /**
@@ -74,7 +66,8 @@ class ViewTest extends TestCase
      */
     public function testGetTransactionLogData()
     {
-        $this->request->expects($this->once())->method('getParam')->willReturn(1);
+        $this->block->expects($this->once())->method('getRequest')->willReturn($this->request);
+        $this->request->expects($this->once())->method('getParam')->with('id')->willReturn(1);
         $this->transactionLogFactory
             ->expects($this->once())
             ->method('create')
@@ -97,5 +90,11 @@ class ViewTest extends TestCase
     public function testGetStatusLabel()
     {
         $this->assertEquals(__('Success'), $this->block->getStatusLabel(1));
+    }
+
+    private function setProperty(object $object, string $property, mixed $value): void
+    {
+        $reflection = new \ReflectionProperty($object, $property);
+        $reflection->setValue($object, $value);
     }
 }

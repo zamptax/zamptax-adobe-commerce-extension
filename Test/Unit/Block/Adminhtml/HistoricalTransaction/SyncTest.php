@@ -7,8 +7,6 @@ namespace ATF\Zamp\Test\Unit\Block\Adminhtml\HistoricalTransaction;
 
 use ATF\Zamp\Block\Adminhtml\HistoricalTransaction\Sync;
 use ATF\Zamp\Model\Configurations;
-use Magento\Framework\UrlInterface;
-use Magento\Backend\Block\Widget\Context;
 use PHPUnit\Framework\TestCase;
 
 class SyncTest extends TestCase
@@ -19,32 +17,19 @@ class SyncTest extends TestCase
     protected $block;
 
     /**
-     * @var Context|MockObject
-     */
-    protected $contextMock;
-
-    /**
      * @var Configurations|MockObject
      */
     protected $configMock;
 
-    /**
-     * @var UrlInterface|MockObject
-     */
-    protected $urlBuilderMock;
-
     protected function setUp(): void
     {
-        $this->contextMock = $this->createMock(Context::class);
-        $this->urlBuilderMock = $this->getMockForAbstractClass(UrlInterface::class);
         $this->configMock = $this->createMock(Configurations::class);
+        $this->block = $this->getMockBuilder(Sync::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getUrl'])
+            ->getMock();
 
-        $this->contextMock
-            ->expects($this->once())
-            ->method('getUrlBuilder')
-            ->willReturn($this->urlBuilderMock);
-
-        $this->block = new Sync($this->contextMock, $this->configMock);
+        $this->setProperty($this->block, 'config', $this->configMock);
     }
 
     /**
@@ -69,12 +54,18 @@ class SyncTest extends TestCase
      */
     public function testGetSyncUrl()
     {
-        $this->urlBuilderMock
+        $this->block
             ->expects($this->once())
             ->method('getUrl')
             ->with('zamp/historicalTransaction/massSync')
             ->willReturn('http://mass-sync-url');
 
-        $this->block->getSyncUrl();
+        $this->assertSame('http://mass-sync-url', $this->block->getSyncUrl());
+    }
+
+    private function setProperty(object $object, string $property, mixed $value): void
+    {
+        $reflection = new \ReflectionProperty($object, $property);
+        $reflection->setValue($object, $value);
     }
 }

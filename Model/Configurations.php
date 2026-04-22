@@ -6,7 +6,6 @@
 
 namespace ATF\Zamp\Model;
 
-use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 
@@ -62,23 +61,6 @@ class Configurations
     }
 
     /**
-     * Is Taxable State
-     *
-     * @param AddressInterface $address
-     * @return bool
-     */
-    public function isTaxableState(AddressInterface $address): bool
-    {
-        $stateId = $address->getRegion() ? $address->getRegion()->getRegionId() : null;
-        if ($stateId === null) {
-            return false;
-        }
-
-        $taxableStates = explode(',', $this->getTaxableState());
-        return in_array((string)$stateId, $taxableStates, true);
-    }
-
-    /**
      * Is send transaction to zamp enabled
      *
      * @param string|null $scopeCode
@@ -91,21 +73,6 @@ class Configurations
             ScopeInterface::SCOPE_WEBSITE,
             $scopeCode
         );
-    }
-
-    /**
-     * Get Taxable State
-     *
-     * @param string|null $scopeCode
-     * @return string|null
-     */
-    public function getTaxableState($scopeCode = null): ?string
-    {
-        return $this->scopeConfig->getValue(
-            self::MODULE_CONFIG_PATH . '/taxable_states',
-            ScopeInterface::SCOPE_WEBSITE,
-            $scopeCode
-        ) ?? '';
     }
 
     /**

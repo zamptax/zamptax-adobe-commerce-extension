@@ -28,6 +28,7 @@ class TransactionObject extends DataObject
     public const ENTITY = 'entity';
     public const PURPOSE = 'purpose';
     public const IS_RESALE = 'isResale';
+    public const CURRENCY = 'currency';
     public const DISCOUNT = 'discount';
     public const SUB_TOTAL = 'subtotal';
     public const SHIPPING_HANDLING = 'shippingHandling';
@@ -177,6 +178,16 @@ class TransactionObject extends DataObject
     }
 
     /**
+     * Get Currency
+     *
+     * @return string|null
+     */
+    public function getCurrency(): ?string
+    {
+        return $this->getData(self::CURRENCY);
+    }
+
+    /**
      * Get Ship To Address
      *
      * @return ShipToAddress
@@ -271,12 +282,14 @@ class TransactionObject extends DataObject
 
         $entityType = $quote->getCustomerTaxExemptCode();
         $purpose = ($entityType === 'WHOLESALER' || $entityType === 'RESALE') ? 'RESALE' : null;
+        $currencyCode = (string)$quote->getCurrencyCode();
 
         $this->setId($id)
             ->setName($name)
             ->setTransactedAt($quote->getUpdatedAt())
             ->setEntity($entityType)
             ->setResale($purpose === 'RESALE')
+            ->setCurrency($currencyCode !== '' ? $currencyCode : null)
             ->setSubTotal($subTotal)
             ->setShippingHandling($shippingHandling)
             ->setTotal($total)
@@ -310,23 +323,76 @@ class TransactionObject extends DataObject
         $city = $address->getCity() ?: null;
         $shippingToAddress->setCity($city);
 
-        if ($address instanceof Address) {
-            $stateId = $address->getRegionId();
-        } else {
-            $stateId = $address->getRegion() ? $address->getRegion()->getRegionId() : null;
-        }
-
-        if ($stateId) {
-            $stateCode = $shippingToAddress->getRegionCodeById($stateId);
+        $stateCode = $this->resolveStateCode($address, $shippingToAddress);
+        if ($stateCode !== null && $stateCode !== '') {
             $shippingToAddress->setState($stateCode);
         }
 
         $postcode = $address->getPostcode() ?: null;
         $shippingToAddress->setZip($postcode);
 
-        $shippingToAddress->setCountry($address->getCountryId());
+        $countryId = $address->getCountryId();
+        if ($countryId !== null && $countryId !== '') {
+            $shippingToAddress->setCountry($countryId);
+        }
 
         return $shippingToAddress;
+    }
+
+    /**
+     * Resolves province/state code across order, quote and customer address shapes.
+     *
+     * @param mixed $address
+     * @param ShipToAddress $shippingToAddress
+     * @return string|null
+     * @throws LocalizedException
+     */
+    private function resolveStateCode($address, ShipToAddress $shippingToAddress): ?string
+    {
+        $stateId = null;
+        if ($address instanceof Address) {
+            $stateId = $address->getRegionId();
+        } elseif (method_exists($address, 'getRegionId')) {
+            $stateId = $address->getRegionId();
+        }
+
+        if ($stateId) {
+            return $shippingToAddress->getRegionCodeById($stateId);
+        }
+
+        if (method_exists($address, 'getRegionCode')) {
+            $stateCode = $address->getRegionCode();
+            if (is_string($stateCode) && $stateCode !== '') {
+                return $stateCode;
+            }
+        }
+
+        if (!method_exists($address, 'getRegion')) {
+            return null;
+        }
+
+        $region = $address->getRegion();
+        if (is_string($region) && $region !== '') {
+            return $region;
+        }
+
+        if (is_object($region)) {
+            if (method_exists($region, 'getRegionCode')) {
+                $stateCode = $region->getRegionCode();
+                if (is_string($stateCode) && $stateCode !== '') {
+                    return $stateCode;
+                }
+            }
+
+            if (method_exists($region, 'getRegionId')) {
+                $stateId = $region->getRegionId();
+                if ($stateId) {
+                    return $shippingToAddress->getRegionCodeById($stateId);
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -526,6 +592,17 @@ class TransactionObject extends DataObject
     public function setTotal(float $total): TransactionObject
     {
         return $this->setData(self::TOTAL, $total);
+    }
+
+    /**
+     * Set Currency
+     *
+     * @param string|null $currency
+     * @return TransactionObject
+     */
+    public function setCurrency(?string $currency): TransactionObject
+    {
+        return $this->setData(self::CURRENCY, $currency);
     }
 
     /**

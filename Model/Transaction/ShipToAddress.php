@@ -146,9 +146,9 @@ class ShipToAddress extends DataObject
     /**
      * Get Country
      *
-     * @return string
+     * @return string|null
      */
-    public function getCountry(): string
+    public function getCountry(): ?string
     {
         return $this->getData(self::COUNTRY);
     }
@@ -156,10 +156,10 @@ class ShipToAddress extends DataObject
     /**
      * Set Country
      *
-     * @param string $country
+     * @param string|null $country
      * @return ShipToAddress
      */
-    public function setCountry(string $country): ShipToAddress
+    public function setCountry(?string $country): ShipToAddress
     {
         return $this->setData(self::COUNTRY, $country);
     }

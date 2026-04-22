@@ -89,6 +89,7 @@ class Transact
                 'id' => $invoice->getId(),
                 'increment_id' => $invoice->getIncrementId(),
                 'customer_tax_exempt_code' => $order->getZampCustomerTaxExemptCode(),
+                'currency_code' => $order->getOrderCurrencyCode(),
                 'updated_at' => $invoice->getCreatedAt(),
                 'shipping_amount' => (float)$invoice->getShippingAmount(),
                 'sub_total' => $invoice->getSubTotal(),

@@ -70,6 +70,9 @@ class UninstallSchemaTest extends TestCase
     public function testRemoveTables(): void
     {
         $this->moduleDataSetupMock->method('getConnection')->willReturn($this->connectionMock);
+        $this->moduleDataSetupMock->expects($this->exactly(2))
+            ->method('getTable')
+            ->willReturnCallback(static fn (string $tableName) => $tableName);
 
         // Mock table existence check.
         $this->connectionMock->method('isTableExists')
@@ -89,13 +92,11 @@ class UninstallSchemaTest extends TestCase
      */
     public function testDropTriggersForTables(): void
     {
-        $writer = new \Zend_Log_Writer_Stream(BP . '/var/log/rdebug.log');
-        $logger = new \Zend_Log();
-        $logger->addWriter($writer);
-        $logger->info(__METHOD__);
+        $executedQueries = [];
+
         $this->moduleDataSetupMock->method('getConnection')->willReturn($this->connectionMock);
-        $this->connectionMock->expects($this->exactly(2))
-            ->method('getTableName')
+        $this->moduleDataSetupMock->expects($this->exactly(2))
+            ->method('getTable')
             ->willReturnCallback(function (string $tableName) {
                 return $tableName;
             });
@@ -115,7 +116,15 @@ class UninstallSchemaTest extends TestCase
         $this->connectionMock
             ->expects($this->exactly(6))
             ->method('query')
-            ->willReturnCallback(function (string $query) use ($query1, $query2, $triggersResult1, $triggersResult2) {
+            ->willReturnCallback(function (string $query) use (
+                &$executedQueries,
+                $query1,
+                $query2,
+                $triggersResult1,
+                $triggersResult2
+            ) {
+                $executedQueries[] = $query;
+
                 $result = match ($query) {
                     $query1 => $triggersResult1,
                     $query2 => $triggersResult2,
@@ -123,12 +132,6 @@ class UninstallSchemaTest extends TestCase
                 };
 
                 return $this->createMockStatement($result);
-            });
-
-        $this->connectionMock->expects($this->any())
-            ->method('query')
-            ->willReturnCallback(function (string $query) use (&$executedQueries, $logger) {
-                $executedQueries[] = $query;
             });
 
         // Call the method under test.
@@ -181,29 +184,13 @@ class UninstallSchemaTest extends TestCase
             'sales_creditmemo_grid' => true,
             'sales_order_item' => true,
             'sales_invoice_item' => true,
-            'quote' => true
+            'quote' => true,
+            'customer_group' => true,
         ];
 
-        $this->connectionMock->expects($this->exactly(8))
-            ->method('getTableName')
-            ->withConsecutive(
-                ['sales_order'],
-                ['sales_invoice'],
-                ['sales_invoice_grid'],
-                ['sales_creditmemo'],
-                ['sales_creditmemo_grid'],
-                ['sales_order_item'],
-                ['sales_invoice_item'],
-                ['quote']
-            )->willReturnOnConsecutiveCalls(
-                'sales_order',
-                'sales_invoice',
-                'sales_invoice_grid',
-                'sales_creditmemo_grid',
-                'sales_order_item',
-                'sales_invoice_item',
-                'quote'
-            );
+        $this->moduleDataSetupMock->expects($this->exactly(9))
+            ->method('getTable')
+            ->willReturnCallback(static fn (string $tableName) => $tableName);
 
         // Mock table existence checks
         $this->connectionMock->expects($this->exactly(count($expectedTableChecks)))
@@ -211,7 +198,7 @@ class UninstallSchemaTest extends TestCase
             ->willReturn(true);
 
         // Mock column existence checks
-        $this->connectionMock->expects($this->exactly(9))
+        $this->connectionMock->expects($this->exactly(10))
             ->method('tableColumnExists')
             ->willReturn(true);
 
@@ -226,6 +213,7 @@ class UninstallSchemaTest extends TestCase
             ['sales_order_item', 'tax_provider_tax_code'],
             ['sales_invoice_item', 'tax_provider_tax_code'],
             ['quote', 'is_zamp_tax_calculated'],
+            ['customer_group', 'zamp_tax_exempt_code'],
         ];
 
         // Expect dropColumn to be called with the correct table and column names.

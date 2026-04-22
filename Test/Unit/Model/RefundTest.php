@@ -94,7 +94,13 @@ class RefundTest extends TestCase
         // Create mocks for Creditmemo, Invoice, and Order
         $creditMemoMock = $this->createMock(Creditmemo::class);
         $orderMock = $this->getMockBuilder(OrderInterface::class)
-            ->addMethods(['getInvoiceCollection', 'getFirstItem', 'getShippingAddress', 'getZampCustomerTaxExemptCode'])
+            ->onlyMethods(['getOrderCurrencyCode'])
+            ->addMethods([
+                'getInvoiceCollection',
+                'getFirstItem',
+                'getShippingAddress',
+                'getZampCustomerTaxExemptCode'
+            ])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
@@ -123,6 +129,7 @@ class RefundTest extends TestCase
         $orderMock->expects($this->once())->method('getFirstItem')->willReturn($invoiceMock);
         $orderMock->expects($this->once())->method('getShippingAddress')->willReturn('Test Shipping Address');
         $orderMock->expects($this->once())->method('getZampCustomerTaxExemptCode')->willReturn('FEDERAL_GOV');
+        $orderMock->expects($this->once())->method('getOrderCurrencyCode')->willReturn('CAD');
 
         // Mock TransactionObjectFactory and TransactionObject creation
         $transactionObjMock = $this->getMockBuilder(DataObject::class)
@@ -136,7 +143,13 @@ class RefundTest extends TestCase
             ->willReturn($transactionObjMock);
         $transactionObjMock->expects($this->once())
             ->method('createPayload')
-            ->with($this->isInstanceOf(DataObject::class), 'refund')
+            ->with(
+                $this->callback(function (DataObject $request): bool {
+                    $refund = $request->getData('zamp_refund');
+                    return $refund instanceof DataObject && $refund->getData('currency_code') === 'CAD';
+                }),
+                'refund'
+            )
             ->willReturn($transactionObjMock);
         $transactionObjMock->expects($this->once())
             ->method('toArray')

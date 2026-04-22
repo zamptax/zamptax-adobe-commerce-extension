@@ -54,6 +54,9 @@ class UninstallSchema
         ],
         'quote' => [
             'is_zamp_tax_calculated'
+        ],
+        'customer_group' => [
+            'zamp_tax_exempt_code'
         ]
     ];
 
@@ -90,8 +93,7 @@ class UninstallSchema
     {
         $connection = $this->moduleDataSetup->getConnection();
         foreach ($this->tableNames as $tableName) {
-            // Get the fully qualified table name with prefix and suffix
-            $tableName = $connection->getTableName($tableName);
+            $tableName = $this->moduleDataSetup->getTable($tableName);
             if ($connection->isTableExists($tableName)) {
                 $connection->dropTable($tableName);
             }
@@ -107,7 +109,7 @@ class UninstallSchema
     public function dropTriggersForTables(): void
     {
         foreach ($this->tableNames as $tableName) {
-            $this->dropTriggers($this->moduleDataSetup->getConnection()->getTableName($tableName));
+            $this->dropTriggers($this->moduleDataSetup->getTable($tableName));
         }
     }
 
@@ -142,8 +144,7 @@ class UninstallSchema
     {
         $connection = $this->moduleDataSetup->getConnection();
         foreach ($this->coreTableColumnMappings as $tableName => $columnNames) {
-            // Get the fully qualified table name with prefix and suffix
-            $tableName = $connection->getTableName($tableName);
+            $tableName = $this->moduleDataSetup->getTable($tableName);
             if (!$connection->isTableExists($tableName)) {
                 continue;
             }
